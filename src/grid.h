@@ -1,0 +1,116 @@
+/*******************************************************************************
+** grid.h (spatial partitioning grid and collision checking)
+*******************************************************************************/
+
+#ifndef GRID_H
+#define GRID_H
+
+enum
+{
+  GRID_OBJECT_NONE = 0,
+  GRID_OBJECT_BOOK_SPAWNER,
+  GRID_OBJECT_BLOCK_SINGLE,
+  GRID_OBJECT_BLOCK_LEFT,
+  GRID_OBJECT_BLOCK_RIGHT,
+  GRID_OBJECT_LADDER,
+  GRID_OBJECT_MARBLE,
+  GRID_OBJECT_ICE_SINGLE,
+  GRID_OBJECT_ICE_LEFT,
+  GRID_OBJECT_ICE_RIGHT,
+  GRID_OBJECT_HEART_BLOCK,
+  GRID_OBJECT_DIAMOND_BLOCK,
+  GRID_OBJECT_MAGNET_DOWN_SPAWNER,
+  GRID_OBJECT_MAGNET_RIGHT_SPAWNER,
+  GRID_OBJECT_MAGNET_LEFT_SPAWNER,
+  GRID_OBJECT_BASS_KNOB_STOP,
+  GRID_OBJECT_TREBLE_KNOB_STOP,
+  GRID_OBJECT_ROCKET_BLOCK_RIGHT_STOP,
+  GRID_OBJECT_ROCKET_BLOCK_LEFT_STOP,
+  GRID_OBJECT_DROP_BOLT_DOWN_STOP,
+  GRID_OBJECT_DROP_BOLT_UP_STOP,
+  GRID_OBJECT_ANTI_BOLT_UP_STOP,
+  GRID_OBJECT_ANTI_BOLT_DOWN_STOP,
+  GRID_OBJECT_MAGI_SPAWNER_1_1,
+  GRID_OBJECT_MAGI_SPAWNER_1_3,
+  GRID_OBJECT_MAGI_SPAWNER_2_2,
+  GRID_OBJECT_MAGI_SPAWNER_3_1,
+  GRID_OBJECT_MAGI_BLOCK_1,
+  GRID_OBJECT_MAGI_BLOCK_2,
+  GRID_OBJECT_FAST_MAGI_SPAWNER_1_1,
+  GRID_OBJECT_FAST_MAGI_SPAWNER_1_3,
+  GRID_OBJECT_FAST_MAGI_SPAWNER_2_2,
+  GRID_OBJECT_FAST_MAGI_SPAWNER_3_1,
+  GRID_OBJECT_FAST_MAGI_BLOCK_1,
+  GRID_OBJECT_FAST_MAGI_BLOCK_2,
+  GRID_OBJECT_DOOR_BLOCK,
+  GRID_OBJECT_INVISIBLE_BLOCK,
+  GRID_OBJECT_VISIBLE_BLOCK,
+  GRID_OBJECT_BUBBLE_POT_UP,
+  GRID_OBJECT_BUBBLE_POT_RIGHT,
+  GRID_OBJECT_BUBBLE_POT_DOWN,
+  GRID_OBJECT_BUBBLE_POT_LEFT,
+  GRID_OBJECT_TRACK_RIGHT,
+  GRID_OBJECT_TRACK_LEFT,
+  GRID_OBJECT_TRACK_UP,
+  GRID_OBJECT_TRACK_DOWN,
+  GRID_OBJECT_TRACK_CORNER_UP_RIGHT,
+  GRID_OBJECT_TRACK_CORNER_UP_LEFT,
+  GRID_OBJECT_TRACK_CORNER_DOWN_LEFT,
+  GRID_OBJECT_TRACK_CORNER_DOWN_RIGHT,
+  GRID_OBJECT_ARROWS_000,
+  GRID_OBJECT_ARROWS_045,
+  GRID_OBJECT_ARROWS_090,
+  GRID_OBJECT_ARROWS_135,
+  GRID_OBJECT_ARROWS_180,
+  GRID_OBJECT_ARROWS_225,
+  GRID_OBJECT_ARROWS_270,
+  GRID_OBJECT_ARROWS_315
+};
+
+enum
+{
+  GRID_MOVE_THING_MODE_HORIZONTAL,
+  GRID_MOVE_THING_MODE_VERTICAL,
+  GRID_MOVE_THING_MODE_TEST_POSITION
+};
+
+/* the size of each screen is 320x224, which is 20x14 boxes */
+#define GRID_WIDTH      20
+#define GRID_HEIGHT     14
+#define GRID_NUM_BOXES  (GRID_WIDTH * GRID_HEIGHT)
+
+#define GRID_BOX_SIZE         16
+#define GRID_BOX_SIZE_HALF    (GRID_BOX_SIZE / 2)
+#define GRID_BOX_SIZE_QUARTER (GRID_BOX_SIZE / 4)
+
+#define GRID_BOX_MAX_THINGS 80
+
+typedef struct grid_box
+{
+  int           back_object;
+  int           back_color;
+  int           back_state;
+  unsigned int  back_timer_offset;
+
+  int           front_object;
+  int           front_color;
+  int           front_state;
+  unsigned int  front_timer_offset;
+
+  int           thing_indices[GRID_BOX_MAX_THINGS];
+  int           num_things;
+} grid_box;
+
+extern grid_box G_collision_grid[GRID_NUM_BOXES];
+
+/* function declarations */
+short int grid_reset();
+
+short int grid_add_thing(int index);
+short int grid_remove_thing(int index);
+
+short int grid_move_thing(int index, int mode, int amount);
+
+short int grid_load_objects_from_tilemap();
+
+#endif
