@@ -974,7 +974,7 @@ short int vb_menu_load_title_screen()
   vb_menu_load_text(-7,  3, VB_MENU_TEXT_ALIGN_LEFT_SHIFTED, 0, 6, 16, "Credits");
   vb_menu_load_text(-7,  5, VB_MENU_TEXT_ALIGN_LEFT_SHIFTED, 0, 6, 16, "Quit");
 
-  vb_menu_load_text(0, 11, VB_MENU_TEXT_ALIGN_CENTER, 0, 6, 32, "2022 Michael Behrens v1.0");
+  vb_menu_load_text(0, 11, VB_MENU_TEXT_ALIGN_CENTER, 0, 6, 32, "2022 Michael Behrens v1.0b");
 
   G_num_saved_sprites[0] = G_num_sprites;
 
@@ -1163,12 +1163,20 @@ short int vb_menu_load_room_select_screen()
 
   vb_menu_load_background();
 
-  vb_menu_load_panel(0, -11, 9, 2);
+  vb_menu_load_panel(0, -11, 10, 2);
   vb_menu_load_panel(0, 3, 10, 9);
 
   vb_menu_load_text(0, -11, VB_MENU_TEXT_ALIGN_CENTER, 0, 6, 
                     LEVEL_WORLD_NAME_SIZE, &G_world_names[G_screen_alternate][0]);
 
+  /* display *'s by the world name if all rooms are completed */
+  if (G_save_game_data[G_screen_alternate] == SAVE_GAME_ROOMS_PER_WORLD)
+  {
+    vb_menu_load_text(-9, -11, VB_MENU_TEXT_ALIGN_LEFT_SHIFTED, 0, 6, 8, ">");
+    vb_menu_load_text(9, -11, VB_MENU_TEXT_ALIGN_RIGHT_SHIFTED, 0, 6, 8, "<");
+  }
+
+  /* compute bound for displayed room names */
   if (G_save_game_data[G_screen_alternate] <= 0)
     bound = 1;
   else if (G_save_game_data[G_screen_alternate] >= SCREEN_ROOM_SELECT_NUM_CHOICES)
@@ -1176,12 +1184,14 @@ short int vb_menu_load_room_select_screen()
   else
     bound = G_save_game_data[G_screen_alternate] + 1;
 
+  /* display room names */
   for (k = 0; k < bound; k++)
   {
     vb_menu_load_text(-8, -4 + 2 * k, VB_MENU_TEXT_ALIGN_LEFT_SHIFTED, 0, 6, 
                       LEVEL_ROOM_NAME_SIZE, &G_room_names[SCREEN_ROOM_SELECT_NUM_CHOICES * G_screen_alternate + k][0]);
   }
 
+  /* display ??? for rooms that have not been reached yet */
   for (k = bound; k < SCREEN_ROOM_SELECT_NUM_CHOICES; k++)
   {
     vb_menu_load_text(-8, -4 + 2 * k, VB_MENU_TEXT_ALIGN_LEFT_SHIFTED, 0, 6, 
