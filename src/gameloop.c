@@ -367,13 +367,13 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
       G_screen_page = 0;
       G_screen_choice = 0;
 
-      G_timer_count = 0;
-
       save_game_mark_current_room_complete();
 
       vb_sprite_load_grid_objects();
       vb_sprite_load_things();
       vb_menu_load_room_complete_panel();
+
+      G_timer_count = 0;
     }
     else if (alternate == SCREEN_ROOM_COMPLETE_PANEL_ALTERNATE_CLOSING)
     {
@@ -407,13 +407,13 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
       G_screen_page = 0;
       G_screen_choice = 0;
 
-      G_timer_count = 0;
-
       save_game_mark_current_room_complete();
 
       vb_sprite_load_grid_objects();
       vb_sprite_load_things();
       vb_menu_load_room_complete_panel();
+
+      G_timer_count = 0;
     }
   }
   /* pause panel */

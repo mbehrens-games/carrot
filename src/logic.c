@@ -2363,26 +2363,10 @@ short int logic_move_thrown_things()
 
   thing* t;
 
-  grid_box* b;
-
-  int box_x;
-  int box_y;
-
   int rider_indices[2];
 
   int hori_collision_check;
   int vert_collision_check;
-
-  int type;
-  int orient;
-
-  int pos_x;
-  int pos_y;
-
-  int vel_x;
-  int vel_y;
-
-  unsigned int adjusted_timer_count;
 
   /* move thrown things */
   for ( i = WORLD_THROWN_THINGS_START_INDEX; 
@@ -2421,9 +2405,6 @@ short int logic_move_thrown_things()
       rider_indices[0] = WORLD_BUNNY_INDEX;
       rider_indices[1] = -1;
     }
-
-    /* determine adjusted timer count */
-    adjusted_timer_count = (G_timer_count + t->timer_offset) % 240;
 
     /* initialize collision check flags */
     hori_collision_check = 0;
@@ -2504,73 +2485,23 @@ short int logic_move_thrown_things()
             continue;
           }
 
-          /* if this is an early landing, reset state */
-          if (t->state == STATE_THROWN_MARBLE_EARLY_LANDING)
+          /* otherwise, set the landed state! */
+          t->state = STATE_THROWN_THING_LANDED;
+        }
+        /* if this is a non-diagonal bounce, count it as a potential  */
+        /* landing (it may still be able to be zinged by an arrow)    */
+        else if ( ((vert_collision_check == 1) && (t->vel_x == 0)) || 
+                  ((hori_collision_check == 1) && (t->vel_y == 0)))
+        {
+          /* if we have a bounce negation, ignore the landing */
+          /* so the bunny can ride on this thrown thing       */
+          if (t->state == STATE_THROWN_THING_NEGATE_BOUNCE)
+          {
             t->state = STATE_NONE;
-
-          /* set to a falling marble */
-          if (G_marble_gravity == MARBLE_GRAVITY_DOWN)
-          {
-            t->vel_x = 0;
-            t->vel_y = THING_THROWN_FALLING_VEL;
-          }
-          else if (G_marble_gravity == MARBLE_GRAVITY_UP)
-          {
-            t->vel_x = 0;
-            t->vel_y = -THING_THROWN_FALLING_VEL;
-          }
-          else if (G_marble_gravity == MARBLE_GRAVITY_RIGHT)
-          {
-            t->vel_x = THING_THROWN_FALLING_VEL;
-            t->vel_y = 0;
-          }
-          else if (G_marble_gravity == MARBLE_GRAVITY_LEFT)
-          {
-            t->vel_x = -THING_THROWN_FALLING_VEL;
-            t->vel_y = 0;
-          }
-          else
-          {
-            t->vel_x = 0;
-            t->vel_y = THING_THROWN_FALLING_VEL;
-          }
-
-          /* compute grid box that contains this marble's center */
-          box_x = t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-          box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-
-          /* wraparound box indices */
-          box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
-          box_y = (box_y + GRID_HEIGHT) % GRID_HEIGHT;
-
-          b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
-
-          /* try to snap to the grid */
-          /* note that we check for num_things being 1, because */
-          /* the marble is already a thing in this grid box     */
-          if ((b->front_object == GRID_OBJECT_NONE) && 
-              (b->num_things == 1))
-          {
-            /* insert marble into the grid */
-            b->front_object = GRID_OBJECT_MARBLE;
-            b->front_color = t->color;
-            b->front_state = t->state;
-            b->front_timer_offset = 0;
-
-            /* despawn thing */
-            world_despawn_thing(i);
-
-            /* set flag to redraw the grid this frame */
-            G_flag_redraw_grid_objects = 1;
-
-            /* check for matches this frame */
-            logic_marbles_check_for_matches();
-
-            /* play landing sound */
-            doremi_play_sfx(SFX_INDEX_THROWN_THING_LANDED);
-
             continue;
           }
+
+          t->state = STATE_THROWN_THING_MAY_HAVE_LANDED;
         }
         /* otherwise, bounce the marble */
         else
@@ -2611,73 +2542,23 @@ short int logic_move_thrown_things()
             continue;
           }
 
-          if (t->type == THING_TYPE_THROWN_CRITTER_WALKER_1)
-            type = THING_TYPE_CRITTER_WALKER_1;
-          else if (t->type == THING_TYPE_THROWN_CRITTER_WALKER_2)
-            type = THING_TYPE_CRITTER_WALKER_2;
-          else if (t->type == THING_TYPE_THROWN_CRITTER_FLYER_1)
-            type = THING_TYPE_CRITTER_FLYER_1;
-          else if (t->type == THING_TYPE_THROWN_CRITTER_FLYER_2)
-            type = THING_TYPE_CRITTER_FLYER_2;
-          else
-            type = THING_TYPE_CRITTER_WALKER_1;
-
-          pos_x = t->pos_x;
-          pos_y = t->pos_y;
-
-          if ((t->type == THING_TYPE_THROWN_CRITTER_WALKER_1) || 
-              (t->type == THING_TYPE_THROWN_CRITTER_WALKER_2) || 
-              (t->type == THING_TYPE_THROWN_CRITTER_FLYER_1))
+          /* otherwise, set the landed state! */
+          t->state = STATE_THROWN_THING_LANDED;
+        }
+        /* if this is a non-diagonal bounce, count it as a potential  */
+        /* landing (it may still be able to be zinged by an arrow)    */
+        else if ( ((vert_collision_check == 1) && (t->vel_x == 0)) || 
+                  ((hori_collision_check == 1) && (t->vel_y == 0)))
+        {
+          /* if we have a bounce negation, ignore the landing */
+          /* so the bunny can ride on this thrown thing       */
+          if (t->state == STATE_THROWN_THING_NEGATE_BOUNCE)
           {
-            if (t->vel_x == 0)
-            {
-              if ((t->orient == THING_ORIENT_NORMAL) || (t->orient == THING_ORIENT_FLIP_VERT))
-              {
-                vel_x = THING_CRITTER_VEL;
-                orient = THING_ORIENT_NORMAL;
-              }
-              else
-              {
-                vel_x = -THING_CRITTER_VEL;
-                orient = THING_ORIENT_FLIP_HORI;
-              }
-            }
-            else if (t->vel_x > 0)
-            {
-              vel_x = THING_CRITTER_VEL;
-              orient = THING_ORIENT_NORMAL;
-            }
-            else
-            {
-              vel_x = -THING_CRITTER_VEL;
-              orient = THING_ORIENT_FLIP_HORI;
-            }
-
-            vel_y = 0;
-          }
-          else if (t->type == THING_TYPE_THROWN_CRITTER_FLYER_2)
-          {
-            vel_x = 0;
-
-            if ((t->orient == THING_ORIENT_NORMAL) || (t->orient == THING_ORIENT_FLIP_VERT))
-            {
-              vel_y = THING_CRITTER_VEL;
-              orient = THING_ORIENT_NORMAL;
-            }
-            else
-            {
-              vel_y = -THING_CRITTER_VEL;
-              orient = THING_ORIENT_FLIP_HORI;
-            }
+            t->state = STATE_NONE;
+            continue;
           }
 
-          /* despawn thrown critter, respawn as a normal critter */
-          world_despawn_thing(i);
-          world_spawn_thing(type, COLOR_NONE, STATE_CRITTER_STUNNED, orient, 
-                            pos_x, pos_y, vel_x, vel_y, 240 - G_timer_count);
-
-          /* play landing sound */
-          doremi_play_sfx(SFX_INDEX_THROWN_THING_LANDED);
+          t->state = STATE_THROWN_THING_MAY_HAVE_LANDED;
         }
         /* otherwise, bounce the critter */
         else
@@ -3191,6 +3072,10 @@ short int logic_arrows_activate()
     if (t->type == THING_TYPE_NONE)
       continue;
 
+    /* if this thing is landing this frame, continue */
+    if (t->state == STATE_THROWN_THING_LANDED)
+      continue;
+
     /* clear awaiting snap to grid flag if necessary */
     if (t->state == STATE_AWAITING_SNAP_TO_GRID)
       t->state = STATE_NONE;
@@ -3362,6 +3247,10 @@ short int logic_arrows_activate()
       continue;
     }
 
+    /* if arrow is activated, clear potential landing state if necessary */
+    if (t->state == STATE_THROWN_THING_MAY_HAVE_LANDED)
+      t->state = STATE_NONE;
+
     /* if arrow is activated, snap to grid and fire off in that direction */
     /* horizontal move */
     if (amount_x != 0)
@@ -3478,6 +3367,189 @@ short int logic_arrows_activate()
 }
 
 /*******************************************************************************
+** logic_land_thrown_things()
+*******************************************************************************/
+short int logic_land_thrown_things()
+{
+  int i;
+
+  thing* t;
+
+  grid_box* b;
+
+  int box_x;
+  int box_y;
+
+  int type;
+  int orient;
+
+  int pos_x;
+  int pos_y;
+
+  int vel_x;
+  int vel_y;
+
+  /* land thrown things */
+  for ( i = WORLD_THROWN_THINGS_START_INDEX; 
+        i < WORLD_THROWN_THINGS_END_INDEX; 
+        i++)
+  {
+    t = &G_world_all_things[i];
+
+    if (t->type == THING_TYPE_NONE)
+      continue;
+
+    /* see if this thing is landing! */
+    if ((t->state == STATE_THROWN_THING_LANDED) || 
+        (t->state == STATE_THROWN_THING_MAY_HAVE_LANDED))
+    {
+      /* reset state */
+      t->state = STATE_NONE;
+
+      if (t->type == THING_TYPE_THROWN_MARBLE)
+      {
+        /* set to a falling marble */
+        if (G_marble_gravity == MARBLE_GRAVITY_DOWN)
+        {
+          t->vel_x = 0;
+          t->vel_y = THING_THROWN_FALLING_VEL;
+        }
+        else if (G_marble_gravity == MARBLE_GRAVITY_UP)
+        {
+          t->vel_x = 0;
+          t->vel_y = -THING_THROWN_FALLING_VEL;
+        }
+        else if (G_marble_gravity == MARBLE_GRAVITY_RIGHT)
+        {
+          t->vel_x = THING_THROWN_FALLING_VEL;
+          t->vel_y = 0;
+        }
+        else if (G_marble_gravity == MARBLE_GRAVITY_LEFT)
+        {
+          t->vel_x = -THING_THROWN_FALLING_VEL;
+          t->vel_y = 0;
+        }
+        else
+        {
+          t->vel_x = 0;
+          t->vel_y = THING_THROWN_FALLING_VEL;
+        }
+
+        /* compute grid box that contains this marble's center */
+        box_x = t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+
+        /* wraparound box indices */
+        box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
+        box_y = (box_y + GRID_HEIGHT) % GRID_HEIGHT;
+
+        b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
+
+        /* try to snap to the grid */
+        /* note that we check for num_things being 1, because */
+        /* the marble is already a thing in this grid box     */
+        if ((b->front_object == GRID_OBJECT_NONE) && 
+            (b->num_things == 1))
+        {
+          /* insert marble into the grid */
+          b->front_object = GRID_OBJECT_MARBLE;
+          b->front_color = t->color;
+          b->front_state = t->state;
+          b->front_timer_offset = 0;
+
+          /* despawn thing */
+          world_despawn_thing(i);
+
+          /* set flag to redraw the grid this frame */
+          G_flag_redraw_grid_objects = 1;
+
+          /* check for matches this frame */
+          logic_marbles_check_for_matches();
+
+          /* play landing sound */
+          doremi_play_sfx(SFX_INDEX_THROWN_THING_LANDED);
+        }
+      }
+      else if ( (t->type == THING_TYPE_THROWN_CRITTER_WALKER_1) || 
+                (t->type == THING_TYPE_THROWN_CRITTER_WALKER_2) || 
+                (t->type == THING_TYPE_THROWN_CRITTER_FLYER_1)  || 
+                (t->type == THING_TYPE_THROWN_CRITTER_FLYER_2))
+      {
+        if (t->type == THING_TYPE_THROWN_CRITTER_WALKER_1)
+          type = THING_TYPE_CRITTER_WALKER_1;
+        else if (t->type == THING_TYPE_THROWN_CRITTER_WALKER_2)
+          type = THING_TYPE_CRITTER_WALKER_2;
+        else if (t->type == THING_TYPE_THROWN_CRITTER_FLYER_1)
+          type = THING_TYPE_CRITTER_FLYER_1;
+        else if (t->type == THING_TYPE_THROWN_CRITTER_FLYER_2)
+          type = THING_TYPE_CRITTER_FLYER_2;
+        else
+          type = THING_TYPE_CRITTER_WALKER_1;
+
+        pos_x = t->pos_x;
+        pos_y = t->pos_y;
+
+        if ((t->type == THING_TYPE_THROWN_CRITTER_WALKER_1) || 
+            (t->type == THING_TYPE_THROWN_CRITTER_WALKER_2) || 
+            (t->type == THING_TYPE_THROWN_CRITTER_FLYER_1))
+        {
+          if (t->vel_x == 0)
+          {
+            if ((t->orient == THING_ORIENT_NORMAL) || (t->orient == THING_ORIENT_FLIP_VERT))
+            {
+              vel_x = THING_CRITTER_VEL;
+              orient = THING_ORIENT_NORMAL;
+            }
+            else
+            {
+              vel_x = -THING_CRITTER_VEL;
+              orient = THING_ORIENT_FLIP_HORI;
+            }
+          }
+          else if (t->vel_x > 0)
+          {
+            vel_x = THING_CRITTER_VEL;
+            orient = THING_ORIENT_NORMAL;
+          }
+          else
+          {
+            vel_x = -THING_CRITTER_VEL;
+            orient = THING_ORIENT_FLIP_HORI;
+          }
+
+          vel_y = 0;
+        }
+        else if (t->type == THING_TYPE_THROWN_CRITTER_FLYER_2)
+        {
+          vel_x = 0;
+
+          if ((t->orient == THING_ORIENT_NORMAL) || (t->orient == THING_ORIENT_FLIP_VERT))
+          {
+            vel_y = THING_CRITTER_VEL;
+            orient = THING_ORIENT_NORMAL;
+          }
+          else
+          {
+            vel_y = -THING_CRITTER_VEL;
+            orient = THING_ORIENT_FLIP_HORI;
+          }
+        }
+
+        /* despawn thrown critter, respawn as a normal critter */
+        world_despawn_thing(i);
+        world_spawn_thing(type, COLOR_NONE, STATE_CRITTER_STUNNED, orient, 
+                          pos_x, pos_y, vel_x, vel_y, 240 - G_timer_count);
+
+        /* play landing sound */
+        doremi_play_sfx(SFX_INDEX_THROWN_THING_LANDED);
+      }
+    }
+  }
+
+  return 0;
+}
+
+/*******************************************************************************
 ** logic_update_held_thing()
 *******************************************************************************/
 short int logic_update_held_thing()
@@ -3573,6 +3645,8 @@ short int logic_update_frame()
 
   logic_platforms_etc_check_for_tracks_and_stops();
   logic_arrows_activate();
+
+  logic_land_thrown_things();
 
   logic_update_held_thing();
 
