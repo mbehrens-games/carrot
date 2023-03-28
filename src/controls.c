@@ -122,11 +122,16 @@ static int S_num_gamepads;
 static Sint16 S_old_stick_x;
 static Sint16 S_old_stick_y;
 
-static SDL_GameControllerButton S_mapped_as_b;
-static SDL_GameControllerButton S_mapped_as_a;
+static SDL_GameControllerButton S_button_mapped_as_b;
+static SDL_GameControllerButton S_button_mapped_as_a;
+
+static SDL_Scancode S_key_mapped_as_b;
+static SDL_Scancode S_key_mapped_as_a;
 
 int G_active_gamepad;
-int G_button_layout;
+int G_game_button_layout;
+int G_menu_button_layout;
+int G_menu_key_layout;
 
 /*******************************************************************************
 ** controls_setup()
@@ -149,11 +154,16 @@ short int controls_setup()
   S_old_stick_x = 0;
   S_old_stick_y = 0;
 
-  S_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
-  S_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
+  S_button_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
+  S_button_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
+
+  S_key_mapped_as_b = SDL_SCANCODE_Z;
+  S_key_mapped_as_a = SDL_SCANCODE_X;
 
   G_active_gamepad = CONTROLS_ACTIVE_GAMEPAD_NONE;
-  G_button_layout = CONTROLS_BUTTON_LAYOUT_BA;
+  G_game_button_layout = CONTROLS_GAME_BUTTON_LAYOUT_BA;
+  G_menu_button_layout = CONTROLS_MENU_BUTTON_LAYOUT_BA;
+  G_menu_key_layout = CONTROLS_MENU_KEY_LAYOUT_ZX;
 
   return 0;
 }
@@ -194,43 +204,93 @@ short int controls_reset_all_states()
 }
 
 /*******************************************************************************
-** controls_map_buttons()
+** controls_map_gamepad()
 *******************************************************************************/
-short int controls_map_buttons()
+short int controls_map_gamepad()
 {
   /* note: for the buttons, the internal representation is in the style */
   /* of the NES, SNES, etc (i.e., the buttons read BA and YX from left  */
   /* to right). However, SDL2 has the GameController buttons the other  */
   /* way around (i.e., they read AB and XY from left to right).         */
-  if (G_button_layout == CONTROLS_BUTTON_LAYOUT_BA)
+
+  /* in-game screens */
+  if ((G_game_screen == GAME_SCREEN_PLAYING)          || 
+      (G_game_screen == GAME_SCREEN_ROOM_INTRO_PANEL) || 
+      (G_game_screen == GAME_SCREEN_ROOM_COMPLETE_PANEL))
   {
-    S_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
-    S_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
-  }
-  else if (G_button_layout == CONTROLS_BUTTON_LAYOUT_SPLIT_YB_BA)
-  {
-    if ((G_game_screen == GAME_SCREEN_PLAYING)          || 
-        (G_game_screen == GAME_SCREEN_ROOM_INTRO_PANEL) || 
-        (G_game_screen == GAME_SCREEN_ROOM_COMPLETE_PANEL))
+    if (G_game_button_layout == CONTROLS_GAME_BUTTON_LAYOUT_BA)
     {
-      S_mapped_as_b = SDL_CONTROLLER_BUTTON_X;
-      S_mapped_as_a = SDL_CONTROLLER_BUTTON_A;
+      S_button_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
+      S_button_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
+    }
+    else if (G_game_button_layout == CONTROLS_GAME_BUTTON_LAYOUT_YB)
+    {
+      S_button_mapped_as_b = SDL_CONTROLLER_BUTTON_X;
+      S_button_mapped_as_a = SDL_CONTROLLER_BUTTON_A;
     }
     else
     {
-      S_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
-      S_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
+      S_button_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
+      S_button_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
     }
   }
-  else if (G_button_layout == CONTROLS_BUTTON_LAYOUT_YB)
-  {
-    S_mapped_as_b = SDL_CONTROLLER_BUTTON_X;
-    S_mapped_as_a = SDL_CONTROLLER_BUTTON_A;
-  }
+  /* menu screens */
   else
   {
-    S_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
-    S_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
+    if (G_menu_button_layout == CONTROLS_MENU_BUTTON_LAYOUT_BA)
+    {
+      S_button_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
+      S_button_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
+    }
+    else if (G_menu_button_layout == CONTROLS_MENU_BUTTON_LAYOUT_AB)
+    {
+      S_button_mapped_as_b = SDL_CONTROLLER_BUTTON_B;
+      S_button_mapped_as_a = SDL_CONTROLLER_BUTTON_A;
+    }
+    else
+    {
+      S_button_mapped_as_b = SDL_CONTROLLER_BUTTON_A;
+      S_button_mapped_as_a = SDL_CONTROLLER_BUTTON_B;
+    }
+  }
+
+  /* reset the button states after remapping */
+  controls_reset_button_states();
+
+  return 0;
+}
+
+/*******************************************************************************
+** controls_map_keyboard()
+*******************************************************************************/
+short int controls_map_keyboard()
+{
+  /* in-game screens */
+  if ((G_game_screen == GAME_SCREEN_PLAYING)          || 
+      (G_game_screen == GAME_SCREEN_ROOM_INTRO_PANEL) || 
+      (G_game_screen == GAME_SCREEN_ROOM_COMPLETE_PANEL))
+  {
+    S_key_mapped_as_b = SDL_SCANCODE_Z;
+    S_key_mapped_as_a = SDL_SCANCODE_X;
+  }
+  /* menu screens */
+  else
+  {
+    if (G_menu_key_layout == CONTROLS_MENU_KEY_LAYOUT_ZX)
+    {
+      S_key_mapped_as_b = SDL_SCANCODE_Z;
+      S_key_mapped_as_a = SDL_SCANCODE_X;
+    }
+    else if (G_menu_key_layout == CONTROLS_MENU_KEY_LAYOUT_XZ)
+    {
+      S_key_mapped_as_b = SDL_SCANCODE_X;
+      S_key_mapped_as_a = SDL_SCANCODE_Z;
+    }
+    else
+    {
+      S_key_mapped_as_b = SDL_SCANCODE_Z;
+      S_key_mapped_as_a = SDL_SCANCODE_X;
+    }
   }
 
   /* reset the button states after remapping */
@@ -378,31 +438,31 @@ short int controls_last_gamepad()
 }
 
 /*******************************************************************************
-** controls_set_button_layout()
+** controls_set_game_button_layout()
 *******************************************************************************/
-short int controls_set_button_layout(int layout)
+short int controls_set_game_button_layout(int layout)
 {
-  if ((layout < 0) || (layout >= CONTROLS_NUM_BUTTON_LAYOUTS))
+  if ((layout < 0) || (layout >= CONTROLS_NUM_GAME_BUTTON_LAYOUTS))
     return 0;
 
-  G_button_layout = layout;
-  controls_map_buttons();
+  G_game_button_layout = layout;
+  controls_map_gamepad();
 
   return 0;
 }
 
 /*******************************************************************************
-** controls_button_layout_right()
+** controls_game_button_layout_right()
 *******************************************************************************/
-short int controls_button_layout_right()
+short int controls_game_button_layout_right()
 {
   if (G_active_gamepad == CONTROLS_ACTIVE_GAMEPAD_NONE)
     return 0;
 
-  if (G_button_layout + 1 < CONTROLS_NUM_BUTTON_LAYOUTS)
+  if (G_game_button_layout + 1 < CONTROLS_NUM_GAME_BUTTON_LAYOUTS)
   {
-    G_button_layout += 1;
-    controls_map_buttons();
+    G_game_button_layout += 1;
+    controls_map_gamepad();
     doremi_play_sfx(SFX_INDEX_TOGGLE_DOWN);
   }
 
@@ -410,17 +470,111 @@ short int controls_button_layout_right()
 }
 
 /*******************************************************************************
-** controls_button_layout_left()
+** controls_game_button_layout_left()
 *******************************************************************************/
-short int controls_button_layout_left()
+short int controls_game_button_layout_left()
 {
   if (G_active_gamepad == CONTROLS_ACTIVE_GAMEPAD_NONE)
     return 0;
 
-  if (G_button_layout - 1 >= 0)
+  if (G_game_button_layout - 1 >= 0)
   {
-    G_button_layout -= 1;
-    controls_map_buttons();
+    G_game_button_layout -= 1;
+    controls_map_gamepad();
+    doremi_play_sfx(SFX_INDEX_TOGGLE_UP);
+  }
+
+  return 0;
+}
+
+/*******************************************************************************
+** controls_set_menu_button_layout()
+*******************************************************************************/
+short int controls_set_menu_button_layout(int layout)
+{
+  if ((layout < 0) || (layout >= CONTROLS_NUM_MENU_BUTTON_LAYOUTS))
+    return 0;
+
+  G_menu_button_layout = layout;
+  controls_map_gamepad();
+
+  return 0;
+}
+
+/*******************************************************************************
+** controls_menu_button_layout_right()
+*******************************************************************************/
+short int controls_menu_button_layout_right()
+{
+  if (G_active_gamepad == CONTROLS_ACTIVE_GAMEPAD_NONE)
+    return 0;
+
+  if (G_menu_button_layout + 1 < CONTROLS_NUM_MENU_BUTTON_LAYOUTS)
+  {
+    G_menu_button_layout += 1;
+    controls_map_gamepad();
+    doremi_play_sfx(SFX_INDEX_TOGGLE_DOWN);
+  }
+
+  return 0;
+}
+
+/*******************************************************************************
+** controls_menu_button_layout_left()
+*******************************************************************************/
+short int controls_menu_button_layout_left()
+{
+  if (G_active_gamepad == CONTROLS_ACTIVE_GAMEPAD_NONE)
+    return 0;
+
+  if (G_menu_button_layout - 1 >= 0)
+  {
+    G_menu_button_layout -= 1;
+    controls_map_gamepad();
+    doremi_play_sfx(SFX_INDEX_TOGGLE_UP);
+  }
+
+  return 0;
+}
+
+/*******************************************************************************
+** controls_set_menu_key_layout()
+*******************************************************************************/
+short int controls_set_menu_key_layout(int layout)
+{
+  if ((layout < 0) || (layout >= CONTROLS_NUM_MENU_KEY_LAYOUTS))
+    return 0;
+
+  G_menu_key_layout = layout;
+  controls_map_keyboard();
+
+  return 0;
+}
+
+/*******************************************************************************
+** controls_menu_key_layout_right()
+*******************************************************************************/
+short int controls_menu_key_layout_right()
+{
+  if (G_menu_key_layout + 1 < CONTROLS_NUM_MENU_KEY_LAYOUTS)
+  {
+    G_menu_key_layout += 1;
+    controls_map_keyboard();
+    doremi_play_sfx(SFX_INDEX_TOGGLE_DOWN);
+  }
+
+  return 0;
+}
+
+/*******************************************************************************
+** controls_menu_key_layout_left()
+*******************************************************************************/
+short int controls_menu_key_layout_left()
+{
+  if (G_menu_key_layout - 1 >= 0)
+  {
+    G_menu_key_layout -= 1;
+    controls_map_keyboard();
     doremi_play_sfx(SFX_INDEX_TOGGLE_UP);
   }
 
@@ -550,14 +704,14 @@ short int controls_gamepad_button_pressed(SDL_JoystickID instance_id,
   }
 
   /* button b */
-  if ((button == S_mapped_as_b) && 
+  if ((button == S_button_mapped_as_b) && 
       (CONTROLS_INPUT_IS_OFF_OR_RELEASED(CONTROLS_INDEX_BUTTON_B)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_B] = CONTROLS_INPUT_STATE_PRESSED;
   }
 
   /* button a */
-  if ((button == S_mapped_as_a) && 
+  if ((button == S_button_mapped_as_a) && 
       (CONTROLS_INPUT_IS_OFF_OR_RELEASED(CONTROLS_INDEX_BUTTON_A)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_A] = CONTROLS_INPUT_STATE_PRESSED;
@@ -610,14 +764,14 @@ short int controls_gamepad_button_released( SDL_JoystickID instance_id,
   }
 
   /* button b */
-  if ((button == S_mapped_as_b) && 
+  if ((button == S_button_mapped_as_b) && 
       (CONTROLS_INPUT_IS_ON_OR_PRESSED(CONTROLS_INDEX_BUTTON_B)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_B] = CONTROLS_INPUT_STATE_RELEASED;
   }
 
   /* button a */
-  if ((button == S_mapped_as_a) && 
+  if ((button == S_button_mapped_as_a) && 
       (CONTROLS_INPUT_IS_ON_OR_PRESSED(CONTROLS_INDEX_BUTTON_A)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_A] = CONTROLS_INPUT_STATE_RELEASED;
@@ -667,14 +821,14 @@ short int controls_keyboard_key_pressed(SDL_Scancode code)
   }
 
   /* button b */
-  if ((code == SDL_SCANCODE_Z) && 
+  if ((code == S_key_mapped_as_b) && 
       (CONTROLS_INPUT_IS_OFF_OR_RELEASED(CONTROLS_INDEX_BUTTON_B)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_B] = CONTROLS_INPUT_STATE_PRESSED;
   }
 
   /* button a */
-  if ((code == SDL_SCANCODE_X) && 
+  if ((code == S_key_mapped_as_a) && 
       (CONTROLS_INPUT_IS_OFF_OR_RELEASED(CONTROLS_INDEX_BUTTON_A)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_A] = CONTROLS_INPUT_STATE_PRESSED;
@@ -731,14 +885,14 @@ short int controls_keyboard_key_released(SDL_Scancode code)
   }
 
   /* button b */
-  if ((code == SDL_SCANCODE_Z) && 
+  if ((code == S_key_mapped_as_b) && 
       (CONTROLS_INPUT_IS_ON_OR_PRESSED(CONTROLS_INDEX_BUTTON_B)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_B] = CONTROLS_INPUT_STATE_RELEASED;
   }
 
   /* button a */
-  if ((code == SDL_SCANCODE_X) && 
+  if ((code == S_key_mapped_as_a) && 
       (CONTROLS_INPUT_IS_ON_OR_PRESSED(CONTROLS_INDEX_BUTTON_A)))
   {
     S_input_states[CONTROLS_INDEX_BUTTON_A] = CONTROLS_INPUT_STATE_RELEASED;

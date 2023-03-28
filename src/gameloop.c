@@ -82,8 +82,10 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
     G_game_screen = screen;
   }
 
-  /* map the gamepad buttons (needed if in the YB/BA button layout) */
-  controls_map_buttons();
+  /* map the gamepad buttons & keyboard keys (this is */
+  /* needed when we switch to/from the menu screens)  */
+  controls_map_gamepad();
+  controls_map_keyboard();
 
   /* title screen */
   if (screen == GAME_SCREEN_TITLE)
@@ -230,8 +232,8 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
     {
       G_screen_choice = choice;
     }
-    else if ( (alternate == SCREEN_OPTIONS_ALTERNATE_VIDEO) && 
-              (choice >= 0) && (choice < SCREEN_VIDEO_OPTIONS_NUM_CHOICES))
+    else if ( (alternate == SCREEN_OPTIONS_ALTERNATE_MORE) && 
+              (choice >= 0) && (choice < SCREEN_MORE_OPTIONS_NUM_CHOICES))
     {
       G_screen_choice = choice;
     }
@@ -594,20 +596,13 @@ short int game_loop_advance_frame()
 
   /* rendering (second pass - from overscan texture to window) */
   if (G_upscaling_mode == VIDEO_UPSCALING_MODE_LINEAR)
-    render_postprocessing_path_A();
-  else if (G_upscaling_mode == VIDEO_UPSCALING_MODE_TV)
-  {
-    if ((G_blur_filter_sigma_index == 0) && (G_mask_opacity_index == 0))
-      render_postprocessing_path_ACE();
-    else if ((G_blur_filter_sigma_index != 0) && (G_mask_opacity_index == 0))
-      render_postprocessing_path_ABCE();
-    else if ((G_blur_filter_sigma_index == 0) && (G_mask_opacity_index != 0))
-      render_postprocessing_path_ACDE();
-    else
-      render_postprocessing_path_ABCDE();
-  }
+    render_postprocessing_linear();
+  else if (G_upscaling_mode == VIDEO_UPSCALING_MODE_PIXELS)
+    render_postprocessing_pixels();
+  else if (G_upscaling_mode == VIDEO_UPSCALING_MODE_SCANLINES)
+    render_postprocessing_scanlines();
   else
-    render_postprocessing_path_A();
+    render_postprocessing_linear();
 
   /* if we are not in a fade transition,  */
   /* update global timer count            */

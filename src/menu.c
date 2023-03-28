@@ -176,8 +176,8 @@ short int menu_player_input_d_pad_down_pressed()
       G_screen_choice += 1;
       doremi_play_sfx(SFX_INDEX_TOGGLE_DOWN);
     }
-    else if ( (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_VIDEO) && 
-              (G_screen_choice < SCREEN_VIDEO_OPTIONS_NUM_CHOICES - 1))
+    else if ( (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_MORE) && 
+              (G_screen_choice < SCREEN_MORE_OPTIONS_NUM_CHOICES - 1))
     {
       G_screen_choice += 1;
       doremi_play_sfx(SFX_INDEX_TOGGLE_DOWN);
@@ -244,38 +244,38 @@ short int menu_player_input_d_pad_left_pressed()
       {
         graphics_toggle_vsync();
       }
-      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_VOLUME)
+      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_BRIGHTNESS)
+      {
+        video_decrease_brightness();
+      }
+      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_UPSCALING_MODE)
+      {
+        video_cycle_upscaling_mode_left();
+      }
+    }
+    /* more options */
+    else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_MORE)
+    {
+      if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_SOUND_VOLUME)
       {
         doremi_decrease_volume();
       }
-      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_GAMEPAD_NUMBER)
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_GAMEPAD_NUMBER)
       {
         controls_last_gamepad();
       }
-      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_BUTTON_LAYOUT)
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_GAME_BUTTONS)
       {
-        controls_button_layout_left();
+        controls_game_button_layout_left();
       }
-    }
-    /* video options */
-    else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_VIDEO)
-    {
-      if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_UPSCALING_MODE)
-        video_cycle_upscaling_mode_left();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_BRIGHTNESS)
-        video_decrease_black_level();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_CONTRAST)
-        video_decrease_white_level();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_TINT)
-        video_decrease_hue();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_SATURATION)
-        video_decrease_saturation();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_GAMMA)
-        video_decrease_gamma();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_BLUR_AMOUNT)
-        video_decrease_blur_filter_sigma();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_PHOSPHOR_MASK)
-        video_decrease_mask_opacity();
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_MENU_BUTTONS)
+      {
+        controls_menu_button_layout_left();
+      }
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_MENU_KEYS)
+      {
+        controls_menu_key_layout_left();
+      }
     }
   }
   else if (G_game_screen == GAME_SCREEN_HELP)
@@ -335,38 +335,38 @@ short int menu_player_input_d_pad_right_pressed()
       {
         graphics_toggle_vsync();
       }
-      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_VOLUME)
+      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_BRIGHTNESS)
+      {
+        video_increase_brightness();
+      }
+      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_UPSCALING_MODE)
+      {
+        video_cycle_upscaling_mode_right();
+      }
+    }
+    /* more options */
+    else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_MORE)
+    {
+      if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_SOUND_VOLUME)
       {
         doremi_increase_volume();
       }
-      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_GAMEPAD_NUMBER)
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_GAMEPAD_NUMBER)
       {
         controls_next_gamepad();
       }
-      else if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_BUTTON_LAYOUT)
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_GAME_BUTTONS)
       {
-        controls_button_layout_right();
+        controls_game_button_layout_right();
       }
-    }
-    /* video options */
-    else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_VIDEO)
-    {
-      if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_UPSCALING_MODE)
-        video_cycle_upscaling_mode_right();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_BRIGHTNESS)
-        video_increase_black_level();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_CONTRAST)
-        video_increase_white_level();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_TINT)
-        video_increase_hue();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_SATURATION)
-        video_increase_saturation();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_GAMMA)
-        video_increase_gamma();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_BLUR_AMOUNT)
-        video_increase_blur_filter_sigma();
-      else if (G_screen_choice == SCREEN_VIDEO_OPTIONS_CHOICE_PHOSPHOR_MASK)
-        video_increase_mask_opacity();
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_MENU_BUTTONS)
+      {
+        controls_menu_button_layout_right();
+      }
+      else if (G_screen_choice == SCREEN_MORE_OPTIONS_CHOICE_MENU_KEYS)
+      {
+        controls_menu_key_layout_right();
+      }
     }
   }
   else if (G_game_screen == GAME_SCREEN_HELP)
@@ -523,9 +523,9 @@ short int menu_player_input_button_b_pressed()
     /* standard options */
     if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_STANDARD)
     {
-      if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_VIDEO_OPTIONS)
+      if (G_screen_choice == SCREEN_STANDARD_OPTIONS_CHOICE_MORE_OPTIONS)
       {
-        fade_start_transition(GAME_SCREEN_OPTIONS, SCREEN_OPTIONS_ALTERNATE_VIDEO, 0, 0);
+        fade_start_transition(GAME_SCREEN_OPTIONS, SCREEN_OPTIONS_ALTERNATE_MORE, 0, 0);
         doremi_play_sfx(SFX_INDEX_MENU_SELECT);
       }
     }
@@ -678,10 +678,10 @@ short int menu_player_input_button_a_pressed()
       else
         fade_start_transition(GAME_SCREEN_TITLE, 0, 0, SCREEN_TITLE_CHOICE_OPTIONS);
     }
-    else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_VIDEO)
+    else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_MORE)
     {
       fade_start_transition(GAME_SCREEN_OPTIONS, SCREEN_OPTIONS_ALTERNATE_STANDARD, 
-                            0, SCREEN_STANDARD_OPTIONS_CHOICE_VIDEO_OPTIONS);
+                            0, SCREEN_STANDARD_OPTIONS_CHOICE_MORE_OPTIONS);
     }
 
     doremi_play_sfx(SFX_INDEX_THROWN_THING_LANDED);

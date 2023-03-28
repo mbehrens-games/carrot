@@ -173,22 +173,22 @@
   glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_overscan); \
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-#define RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_RESIZED()                           \
+#define RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_NEAREST_RESIZE()                    \
   glEnableVertexAttribArray(0);                                                     \
-  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_resized);         \
+  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_nearest_resize);  \
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);                         \
                                                                                     \
   glEnableVertexAttribArray(1);                                                     \
   glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_overscan); \
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-#define RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_RESIZED()                            \
+#define RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_CUBIC_RESIZE()                      \
   glEnableVertexAttribArray(0);                                                     \
-  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_resized);         \
+  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_cubic_resize);    \
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);                         \
                                                                                     \
   glEnableVertexAttribArray(1);                                                     \
-  glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_resized);  \
+  glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_overscan); \
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 #define RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_WINDOW()                            \
@@ -200,13 +200,22 @@
   glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_overscan); \
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-#define RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_WINDOW()                             \
-  glEnableVertexAttribArray(0);                                                     \
-  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_window);          \
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);                         \
-                                                                                    \
-  glEnableVertexAttribArray(1);                                                     \
-  glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_resized);  \
+#define RENDER_BEGIN_POSTPROCESSING_NEAREST_RESIZE_TO_WINDOW()                            \
+  glEnableVertexAttribArray(0);                                                           \
+  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_window);                \
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);                               \
+                                                                                          \
+  glEnableVertexAttribArray(1);                                                           \
+  glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_nearest_resize); \
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+#define RENDER_BEGIN_POSTPROCESSING_CUBIC_RESIZE_TO_WINDOW()                            \
+  glEnableVertexAttribArray(0);                                                         \
+  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_window);              \
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);                             \
+                                                                                        \
+  glEnableVertexAttribArray(1);                                                         \
+  glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_cubic_resize); \
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 #define RENDER_END_POSTPROCESSING()                                            \
@@ -227,9 +236,6 @@
   glUniformMatrix3fv(G_uniform_A_yiq2rgb_matrix_id, 1, GL_FALSE, G_yiq2rgb_matrix);       \
   glUniform1f(G_uniform_A_black_level_id, G_black_level);                                 \
   glUniform1f(G_uniform_A_white_level_id, G_white_level);                                 \
-  glUniform1f(G_uniform_A_hue_id, G_hue);                                                 \
-  glUniform1f(G_uniform_A_saturation_id, G_saturation);                                   \
-  glUniform1f(G_uniform_A_gamma_id, G_gamma);                                             \
                                                                                           \
   glActiveTexture(GL_TEXTURE0);                                                           \
   glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);                          \
@@ -240,8 +246,6 @@
                                                                                           \
   glUniformMatrix4fv(G_uniform_B_mvp_matrix_id, 1, GL_FALSE, G_mvp_matrix_intermediate);  \
                                                                                           \
-  glUniform1fv(G_uniform_B_blur_filter_id, BLUR_FILTER_BOUND, G_blur_filter);             \
-                                                                                          \
   glActiveTexture(GL_TEXTURE0);                                                           \
   glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);                          \
   glUniform1i(G_uniform_B_texture_sampler_id, 0);
@@ -249,35 +253,22 @@
 #define RENDER_SET_SHADER_C(num)                                                          \
   glUseProgram(G_program_id_C);                                                           \
                                                                                           \
-  glUniformMatrix4fv(G_uniform_C_mvp_matrix_id, 1, GL_FALSE, G_mvp_matrix_intermediate);  \
-                                                                                          \
-  glUniformMatrix4fv(G_uniform_C_cubic_matrix_id, 1, GL_FALSE, G_cubic_matrix);           \
+  glUniformMatrix4fv(G_uniform_C_mvp_matrix_id, 1, GL_FALSE, G_mvp_matrix_window);        \
                                                                                           \
   glActiveTexture(GL_TEXTURE0);                                                           \
   glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);                          \
   glUniform1i(G_uniform_C_texture_sampler_id, 0);
 
-#define RENDER_SET_SHADER_D1(num)                                                         \
-  glUseProgram(G_program_id_D1);                                                          \
+#define RENDER_SET_SHADER_D(num)                                                          \
+  glUseProgram(G_program_id_D);                                                           \
                                                                                           \
-  glUniformMatrix4fv(G_uniform_D1_mvp_matrix_id, 1, GL_FALSE, G_mvp_matrix_intermediate); \
+  glUniformMatrix4fv(G_uniform_D_mvp_matrix_id, 1, GL_FALSE, G_mvp_matrix_intermediate);  \
                                                                                           \
-  glUniform1f(G_uniform_D1_mask_opacity_id, G_mask_opacity);                              \
-                                                                                          \
-  glActiveTexture(GL_TEXTURE0);                                                           \
-  glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);                          \
-  glUniform1i(G_uniform_D1_texture_sampler_id, 0);
-
-#define RENDER_SET_SHADER_D2(num)                                                         \
-  glUseProgram(G_program_id_D2);                                                          \
-                                                                                          \
-  glUniformMatrix4fv(G_uniform_D2_mvp_matrix_id, 1, GL_FALSE, G_mvp_matrix_intermediate); \
-                                                                                          \
-  glUniform1f(G_uniform_D2_mask_opacity_id, G_mask_opacity);                              \
+  glUniformMatrix4fv(G_uniform_D_cubic_matrix_id, 1, GL_FALSE, G_cubic_matrix);           \
                                                                                           \
   glActiveTexture(GL_TEXTURE0);                                                           \
   glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);                          \
-  glUniform1i(G_uniform_D2_texture_sampler_id, 0);
+  glUniform1i(G_uniform_D_texture_sampler_id, 0);
 
 #define RENDER_SET_SHADER_E(num)                                                          \
   glUseProgram(G_program_id_E);                                                           \
@@ -287,15 +278,6 @@
   glActiveTexture(GL_TEXTURE0);                                                           \
   glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);                          \
   glUniform1i(G_uniform_E_texture_sampler_id, 0);
-
-#define RENDER_SET_SHADER_L(num)                                                          \
-  glUseProgram(G_program_id_L);                                                           \
-                                                                                          \
-  glUniformMatrix4fv(G_uniform_L_mvp_matrix_id, 1, GL_FALSE, G_mvp_matrix_window);        \
-                                                                                          \
-  glActiveTexture(GL_TEXTURE0);                                                           \
-  glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);                          \
-  glUniform1i(G_uniform_L_texture_sampler_id, 0);
 
 /*******************************************************************************
 ** render_reset_vbos()
@@ -414,9 +396,9 @@ short int render_scene_fade()
 }
 
 /*******************************************************************************
-** render_postprocessing_path_A()
+** render_postprocessing_linear()
 *******************************************************************************/
-short int render_postprocessing_path_A()
+short int render_postprocessing_linear()
 {
   RENDER_POSTPROCESSING_OPENGL_SETTINGS()
 
@@ -427,9 +409,9 @@ short int render_postprocessing_path_A()
   RENDER_POSTPROCESSING_DRAW_QUAD()
   RENDER_END_POSTPROCESSING()
 
-  /* pass L (linear upscale to window) */
+  /* pass C (linear upscale to window) */
   RENDER_SETUP_WINDOW_OUTPUT()
-  RENDER_SET_SHADER_L(2)
+  RENDER_SET_SHADER_C(2)
   RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_WINDOW()
   RENDER_POSTPROCESSING_DRAW_QUAD()
   RENDER_END_POSTPROCESSING()
@@ -438,9 +420,9 @@ short int render_postprocessing_path_A()
 }
 
 /*******************************************************************************
-** render_postprocessing_path_ACE()
+** render_postprocessing_pixels()
 *******************************************************************************/
-short int render_postprocessing_path_ACE()
+short int render_postprocessing_pixels()
 {
   RENDER_POSTPROCESSING_OPENGL_SETTINGS()
 
@@ -451,168 +433,48 @@ short int render_postprocessing_path_ACE()
   RENDER_POSTPROCESSING_DRAW_QUAD()
   RENDER_END_POSTPROCESSING()
 
-  /* pass C (cubic horizontal resize) */
+  /* pass B (nearest upscale) */
   RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(1)
-  RENDER_SET_SHADER_C(2)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_RESIZED()
+  RENDER_SET_SHADER_B(2)
+  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_NEAREST_RESIZE()
+  RENDER_POSTPROCESSING_DRAW_QUAD()
+  RENDER_END_POSTPROCESSING()
+
+  /* pass C (linear upscale) */
+  RENDER_SETUP_WINDOW_OUTPUT()
+  RENDER_SET_SHADER_C(1)
+  RENDER_BEGIN_POSTPROCESSING_NEAREST_RESIZE_TO_WINDOW()
+  RENDER_POSTPROCESSING_DRAW_QUAD()
+  RENDER_END_POSTPROCESSING()
+
+  return 0;
+}
+
+/*******************************************************************************
+** render_postprocessing_scanlines()
+*******************************************************************************/
+short int render_postprocessing_scanlines()
+{
+  RENDER_POSTPROCESSING_OPENGL_SETTINGS()
+
+  /* pass A (apply settings) */
+  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(2)
+  RENDER_SET_SHADER_A(1)
+  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_OVERSCAN()
+  RENDER_POSTPROCESSING_DRAW_QUAD()
+  RENDER_END_POSTPROCESSING()
+
+  /* pass D (cubic horizontal resize) */
+  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(1)
+  RENDER_SET_SHADER_D(2)
+  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_CUBIC_RESIZE()
   RENDER_POSTPROCESSING_DRAW_QUAD()
   RENDER_END_POSTPROCESSING()
 
   /* pass E (scanline vertical resize) */
   RENDER_SETUP_WINDOW_OUTPUT()
   RENDER_SET_SHADER_E(1)
-  RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_WINDOW()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  return 0;
-}
-
-/*******************************************************************************
-** render_postprocessing_path_ABCE()
-*******************************************************************************/
-short int render_postprocessing_path_ABCE()
-{
-  RENDER_POSTPROCESSING_OPENGL_SETTINGS()
-
-  /* pass A (apply settings) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(2)
-  RENDER_SET_SHADER_A(1)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_OVERSCAN()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass B (blur filter) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(1)
-  RENDER_SET_SHADER_B(2)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_OVERSCAN()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass C (cubic horizontal resize) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(2)
-  RENDER_SET_SHADER_C(1)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_RESIZED()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass E (scanline vertical resize) */
-  RENDER_SETUP_WINDOW_OUTPUT()
-  RENDER_SET_SHADER_E(2)
-  RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_WINDOW()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  return 0;
-}
-
-/*******************************************************************************
-** render_postprocessing_path_ACDE()
-*******************************************************************************/
-short int render_postprocessing_path_ACDE()
-{
-  RENDER_POSTPROCESSING_OPENGL_SETTINGS()
-
-  /* pass A (apply settings) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(2)
-  RENDER_SET_SHADER_A(1)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_OVERSCAN()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass C (cubic horizontal resize) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(1)
-  RENDER_SET_SHADER_C(2)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_RESIZED()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass D (phosphor mask) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(2)
-
-  if ((G_graphics_resolution == GRAPHICS_RESOLUTION_480P) || 
-      (G_graphics_resolution == GRAPHICS_RESOLUTION_720P) || 
-      (G_graphics_resolution == GRAPHICS_RESOLUTION_768P))
-  {
-    RENDER_SET_SHADER_D1(1)
-  }
-  else if (G_graphics_resolution == GRAPHICS_RESOLUTION_1080P)
-  {
-    RENDER_SET_SHADER_D2(1)
-  }
-  else
-  {
-    RENDER_SET_SHADER_D1(1)
-  }
-
-  RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_RESIZED()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass E (scanline vertical resize) */
-  RENDER_SETUP_WINDOW_OUTPUT()
-  RENDER_SET_SHADER_E(2)
-  RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_WINDOW()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  return 0;
-}
-
-/*******************************************************************************
-** render_postprocessing_path_ABCDE()
-*******************************************************************************/
-short int render_postprocessing_path_ABCDE()
-{
-  RENDER_POSTPROCESSING_OPENGL_SETTINGS()
-
-  /* pass A (apply settings) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(2)
-  RENDER_SET_SHADER_A(1)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_OVERSCAN()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass B (blur filter) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(1)
-  RENDER_SET_SHADER_B(2)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_OVERSCAN()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass C (cubic horizontal resize) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(2)
-  RENDER_SET_SHADER_C(1)
-  RENDER_BEGIN_POSTPROCESSING_OVERSCAN_TO_RESIZED()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass D (phosphor mask) */
-  RENDER_SETUP_INTERMEDIATE_TEXTURE_OUTPUT(1)
-
-  if ((G_graphics_resolution == GRAPHICS_RESOLUTION_480P) || 
-      (G_graphics_resolution == GRAPHICS_RESOLUTION_720P) || 
-      (G_graphics_resolution == GRAPHICS_RESOLUTION_768P))
-  {
-    RENDER_SET_SHADER_D1(2)
-  }
-  else if (G_graphics_resolution == GRAPHICS_RESOLUTION_1080P)
-  {
-    RENDER_SET_SHADER_D2(2)
-  }
-  else
-  {
-    RENDER_SET_SHADER_D1(2)
-  }
-
-  RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_RESIZED()
-  RENDER_POSTPROCESSING_DRAW_QUAD()
-  RENDER_END_POSTPROCESSING()
-
-  /* pass E (scanline vertical resize) */
-  RENDER_SETUP_WINDOW_OUTPUT()
-  RENDER_SET_SHADER_E(1)
-  RENDER_BEGIN_POSTPROCESSING_RESIZED_TO_WINDOW()
+  RENDER_BEGIN_POSTPROCESSING_CUBIC_RESIZE_TO_WINDOW()
   RENDER_POSTPROCESSING_DRAW_QUAD()
   RENDER_END_POSTPROCESSING()
 
