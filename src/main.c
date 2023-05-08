@@ -28,6 +28,8 @@
 #include "hola.h"
 #include "level.h"
 #include "options.h"
+#include "palette.h"
+#include "parallax.h"
 #include "path.h"
 #include "render.h"
 #include "savegame.h"
@@ -109,9 +111,21 @@ int main(int argc, char *argv[])
   }
 
   /* initialize opengl textures */
-  if (textures_init())
+  if (texture_init())
   {
-    fprintf(stdout, "Failed to initialize textures. Exiting...\n");
+    fprintf(stdout, "Failed to initialize graphics rom data texture. Exiting...\n");
+    goto cleanup_opengl_objects;
+  }
+
+  if (palette_init())
+  {
+    fprintf(stdout, "Failed to initialize palette texture. Exiting...\n");
+    goto cleanup_opengl_objects;
+  }
+
+  if (parallax_init())
+  {
+    fprintf(stdout, "Failed to initialize parallax texture. Exiting...\n");
     goto cleanup_opengl_objects;
   }
 
@@ -134,10 +148,14 @@ int main(int argc, char *argv[])
   controls_plug_in_all_gamepads();
 
   /* generate texture coordinate tables */
-  graphics_generate_tables();
+  texture_generate_coord_table();
+  palette_generate_coord_tables();
 
   /* generate palette texture */
-  texture_generate_palette();
+  palette_create_opengl_texture();
+
+  /* generate parallax texture */
+  parallax_create_opengl_texture();
 
   /* load all textures */
   if (texture_load_all_from_file(G_path_gfx_data))
@@ -338,7 +356,9 @@ cleanup_gamepads:
   controls_unplug_all_gamepads();
 cleanup_world:
 cleanup_textures:
-  textures_deinit();
+  parallax_deinit();
+  palette_deinit();
+  texture_deinit();
 cleanup_opengl_objects:
   graphics_destroy_opengl_objects();
 cleanup_opengl:

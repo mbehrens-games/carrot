@@ -14,9 +14,11 @@
 #include "graphics.h"
 #include "level.h"
 #include "menu.h"
+#include "palette.h"
 #include "savegame.h"
 #include "screen.h"
 #include "story.h"
+#include "texture.h"
 #include "vbmenu.h"
 #include "video.h"
 
@@ -53,218 +55,190 @@ enum
 
 /* position is the center, width & height are in 8x8 cells */
 #define VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, width, height, z)           \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 0]   = pos_x - (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 1]   = pos_y - (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 2]   = z;                       \
+  G_vertex_buffer_sprites[12 * sprite_index + 0]   = pos_x - (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 1]   = pos_y - (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 2]   = z;                        \
                                                                                \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 3]   = pos_x + (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 4]   = pos_y - (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 5]   = z;                       \
+  G_vertex_buffer_sprites[12 * sprite_index + 3]   = pos_x + (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 4]   = pos_y - (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 5]   = z;                        \
                                                                                \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 6]   = pos_x - (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 7]   = pos_y + (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 8]   = z;                       \
+  G_vertex_buffer_sprites[12 * sprite_index + 6]   = pos_x - (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 7]   = pos_y + (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 8]   = z;                        \
                                                                                \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 9]   = pos_x + (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 10]  = pos_y + (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 11]  = z;
+  G_vertex_buffer_sprites[12 * sprite_index + 9]   = pos_x + (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 10]  = pos_y + (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 11]  = z;
 
 #define VB_MENU_ADD_TO_VERTEX_BUFFER_FLIP_HORI(pos_x, pos_y, width, height, z) \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 0]   = pos_x + (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 1]   = pos_y - (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 2]   = z;                       \
+  G_vertex_buffer_sprites[12 * sprite_index + 0]   = pos_x + (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 1]   = pos_y - (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 2]   = z;                        \
                                                                                \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 3]   = pos_x - (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 4]   = pos_y - (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 5]   = z;                       \
+  G_vertex_buffer_sprites[12 * sprite_index + 3]   = pos_x - (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 4]   = pos_y - (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 5]   = z;                        \
                                                                                \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 6]   = pos_x + (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 7]   = pos_y + (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 8]   = z;                       \
+  G_vertex_buffer_sprites[12 * sprite_index + 6]   = pos_x + (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 7]   = pos_y + (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 8]   = z;                        \
                                                                                \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 9]   = pos_x - (4 * width);     \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 10]  = pos_y + (4 * height);    \
-  G_vertex_buffer_sprites[12 * G_num_sprites + 11]  = z;
+  G_vertex_buffer_sprites[12 * sprite_index + 9]   = pos_x - (4 * width);      \
+  G_vertex_buffer_sprites[12 * sprite_index + 10]  = pos_y + (4 * height);     \
+  G_vertex_buffer_sprites[12 * sprite_index + 11]  = z;
 
 /* cell_x and cell_y are the top left corner, width & height are in 8x8 cells */
 #define VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, width, height)                                \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 0] = G_texture_coord_table[cell_x];                  \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 1] = G_texture_coord_table[64 - cell_y];             \
+  G_texture_coord_buffer_sprites[8 * sprite_index + 0] = G_texture_coord_table[cell_x];                   \
+  G_texture_coord_buffer_sprites[8 * sprite_index + 1] = G_texture_coord_table[64 - cell_y];              \
                                                                                                           \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 2] = G_texture_coord_table[cell_x + width];          \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 3] = G_texture_coord_table[64 - cell_y];             \
+  G_texture_coord_buffer_sprites[8 * sprite_index + 2] = G_texture_coord_table[cell_x + width];           \
+  G_texture_coord_buffer_sprites[8 * sprite_index + 3] = G_texture_coord_table[64 - cell_y];              \
                                                                                                           \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 4] = G_texture_coord_table[cell_x];                  \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 5] = G_texture_coord_table[64 - (cell_y + height)];  \
+  G_texture_coord_buffer_sprites[8 * sprite_index + 4] = G_texture_coord_table[cell_x];                   \
+  G_texture_coord_buffer_sprites[8 * sprite_index + 5] = G_texture_coord_table[64 - (cell_y + height)];   \
                                                                                                           \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 6] = G_texture_coord_table[cell_x + width];          \
-  G_texture_coord_buffer_sprites[8 * G_num_sprites + 7] = G_texture_coord_table[64 - (cell_y + height)];
+  G_texture_coord_buffer_sprites[8 * sprite_index + 6] = G_texture_coord_table[cell_x + width];           \
+  G_texture_coord_buffer_sprites[8 * sprite_index + 7] = G_texture_coord_table[64 - (cell_y + height)];
 
-#define VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                                  \
-  G_palette_coord_buffer_sprites[4 * G_num_sprites + 0] = G_palette_coord_table[4 + (8 * palette) + lighting];  \
-                                                                                                                \
-  G_palette_coord_buffer_sprites[4 * G_num_sprites + 1] = G_palette_coord_table[4 + (8 * palette) + lighting];  \
-                                                                                                                \
-  G_palette_coord_buffer_sprites[4 * G_num_sprites + 2] = G_palette_coord_table[4 + (8 * palette) + lighting];  \
-                                                                                                                \
-  G_palette_coord_buffer_sprites[4 * G_num_sprites + 3] = G_palette_coord_table[4 + (8 * palette) + lighting];  \
+#define VB_MENU_ADD_TO_LIGHTING_AND_PALETTE_BUFFER(lighting, palette)                                   \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 0] = G_lighting_coord_table[8 + lighting];   \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 1] = G_palette_coord_table[palette];         \
+                                                                                                        \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 2] = G_lighting_coord_table[8 + lighting];   \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 3] = G_palette_coord_table[palette];         \
+                                                                                                        \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 4] = G_lighting_coord_table[8 + lighting];   \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 5] = G_palette_coord_table[palette];         \
+                                                                                                        \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 6] = G_lighting_coord_table[8 + lighting];   \
+  G_lighting_and_palette_buffer_sprites[8 * sprite_index + 7] = G_palette_coord_table[palette];
 
 #define VB_MENU_ADD_TO_ELEMENT_BUFFER()                                        \
-  G_index_buffer_sprites[6 * G_num_sprites + 0] = 4 * G_num_sprites + 0;       \
-  G_index_buffer_sprites[6 * G_num_sprites + 1] = 4 * G_num_sprites + 2;       \
-  G_index_buffer_sprites[6 * G_num_sprites + 2] = 4 * G_num_sprites + 1;       \
+  G_index_buffer_sprites[6 * sprite_index + 0] = 4 * sprite_index + 0;         \
+  G_index_buffer_sprites[6 * sprite_index + 1] = 4 * sprite_index + 2;         \
+  G_index_buffer_sprites[6 * sprite_index + 2] = 4 * sprite_index + 1;         \
                                                                                \
-  G_index_buffer_sprites[6 * G_num_sprites + 3] = 4 * G_num_sprites + 1;       \
-  G_index_buffer_sprites[6 * G_num_sprites + 4] = 4 * G_num_sprites + 2;       \
-  G_index_buffer_sprites[6 * G_num_sprites + 5] = 4 * G_num_sprites + 3;
-
-#define VB_MENU_ADD_BACKGROUND_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette)   \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                     \
-  {                                                                                             \
-    VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, 2, 2, z)                                         \
-    VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 2, 2)                                   \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                      \
-    VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                             \
-                                                                                                \
-    G_num_sprites += 1;                                                                         \
-  }
-
-#define VB_MENU_ADD_STORY_STARFIELD_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette)  \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                         \
-  {                                                                                                 \
-    VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, 4, 4, z)                                             \
-    VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 4, 4)                                       \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                          \
-    VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                                 \
-                                                                                                    \
-    G_num_sprites += 1;                                                                             \
-  }
+  G_index_buffer_sprites[6 * sprite_index + 3] = 4 * sprite_index + 1;         \
+  G_index_buffer_sprites[6 * sprite_index + 4] = 4 * sprite_index + 2;         \
+  G_index_buffer_sprites[6 * sprite_index + 5] = 4 * sprite_index + 3;
 
 #define VB_MENU_ADD_PANEL_PIECE_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette)  \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                     \
+  if (sprite_index < GRAPHICS_PANELS_SPRITES_END_INDEX)                                         \
   {                                                                                             \
     VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, 2, 2, z)                                         \
     VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 2, 2)                                   \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                      \
+    VB_MENU_ADD_TO_LIGHTING_AND_PALETTE_BUFFER(lighting, palette)                               \
     VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                             \
                                                                                                 \
-    G_num_sprites += 1;                                                                         \
+    sprite_index += 1;                                                                          \
   }
 
 #define VB_MENU_ADD_FONT_CHARACTER_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette) \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                       \
+  if (sprite_index < GRAPHICS_OVERLAY_SPRITES_END_INDEX)                                          \
   {                                                                                               \
     VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, 1, 2, z)                                           \
     VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 1, 2)                                     \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                        \
+    VB_MENU_ADD_TO_LIGHTING_AND_PALETTE_BUFFER(lighting, palette)                                 \
     VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                               \
                                                                                                   \
-    G_num_sprites += 1;                                                                           \
+    sprite_index += 1;                                                                            \
   }
 
 #define VB_MENU_ADD_TITLE_LOGO_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette)   \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                     \
+  if (sprite_index < GRAPHICS_OVERLAY_SPRITES_END_INDEX)                                        \
   {                                                                                             \
     VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, 23, 6, z)                                        \
     VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 23, 6)                                  \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                      \
+    VB_MENU_ADD_TO_LIGHTING_AND_PALETTE_BUFFER(lighting, palette)                               \
     VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                             \
                                                                                                 \
-    G_num_sprites += 1;                                                                         \
+    sprite_index += 1;                                                                          \
   }
 
 #define VB_MENU_ADD_WORLD_SELECT_ICON_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette)  \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                           \
+  if (sprite_index < GRAPHICS_OVERLAY_SPRITES_END_INDEX)                                              \
   {                                                                                                   \
     VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, 4, 4, z)                                               \
     VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 4, 4)                                         \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                            \
+    VB_MENU_ADD_TO_LIGHTING_AND_PALETTE_BUFFER(lighting, palette)                                     \
     VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                                   \
                                                                                                       \
-    G_num_sprites += 1;                                                                               \
+    sprite_index += 1;                                                                                \
   }
 
 #define VB_MENU_ADD_PAGE_ARROW_RIGHT_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette) \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                         \
+  if (sprite_index < GRAPHICS_OVERLAY_SPRITES_END_INDEX)                                            \
   {                                                                                                 \
     VB_MENU_ADD_TO_VERTEX_BUFFER(pos_x, pos_y, 3, 3, z)                                             \
     VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 3, 3)                                       \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                          \
+    VB_MENU_ADD_TO_LIGHTING_AND_PALETTE_BUFFER(lighting, palette)                                   \
     VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                                 \
                                                                                                     \
-    G_num_sprites += 1;                                                                             \
+    sprite_index += 1;                                                                              \
   }
 
 #define VB_MENU_ADD_PAGE_ARROW_LEFT_TO_BUFFERS(pos_x, pos_y, z, cell_x, cell_y, lighting, palette)  \
-  if (G_num_sprites < GRAPHICS_MAX_SPRITES)                                                         \
+  if (sprite_index < GRAPHICS_OVERLAY_SPRITES_END_INDEX)                                            \
   {                                                                                                 \
     VB_MENU_ADD_TO_VERTEX_BUFFER_FLIP_HORI(pos_x, pos_y, 3, 3, z)                                   \
     VB_MENU_ADD_TO_TEXTURE_COORD_BUFFER(cell_x, cell_y, 3, 3)                                       \
-    VB_MENU_ADD_TO_PALETTE_COORD_BUFFER(lighting, palette)                                          \
+    VB_MENU_ADD_TO_LIGHTING_AND_PALETTE_BUFFER(lighting, palette)                                   \
     VB_MENU_ADD_TO_ELEMENT_BUFFER()                                                                 \
                                                                                                     \
-    G_num_sprites += 1;                                                                             \
+    sprite_index += 1;                                                                              \
   }
 
-/*******************************************************************************
-** vb_menu_load_background()
-*******************************************************************************/
-short int vb_menu_load_background()
-{
-  int m;
-  int n;
+#define VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()                                                     \
+  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_sprites);                                        \
+  glBufferSubData(GL_ARRAY_BUFFER,                                                                  \
+                  GRAPHICS_PANELS_SPRITES_START_INDEX * 12 * sizeof(GLfloat),                       \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] * 12 * sizeof(GLfloat),       \
+                  &G_vertex_buffer_sprites[GRAPHICS_PANELS_SPRITES_START_INDEX * 12]);              \
+                                                                                                    \
+  glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_sprites);                                 \
+  glBufferSubData(GL_ARRAY_BUFFER,                                                                  \
+                  GRAPHICS_PANELS_SPRITES_START_INDEX * 8 * sizeof(GLfloat),                        \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] * 8 * sizeof(GLfloat),        \
+                  &G_texture_coord_buffer_sprites[GRAPHICS_PANELS_SPRITES_START_INDEX * 8]);        \
+                                                                                                    \
+  glBindBuffer(GL_ARRAY_BUFFER, G_lighting_and_palette_buffer_id_sprites);                          \
+  glBufferSubData(GL_ARRAY_BUFFER,                                                                  \
+                  GRAPHICS_PANELS_SPRITES_START_INDEX * 8 * sizeof(GLfloat),                        \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] * 8 * sizeof(GLfloat),        \
+                  &G_lighting_and_palette_buffer_sprites[GRAPHICS_PANELS_SPRITES_START_INDEX * 8]); \
+                                                                                                    \
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, G_index_buffer_id_sprites);                                 \
+  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,                                                          \
+                  GRAPHICS_PANELS_SPRITES_START_INDEX * 6 * sizeof(unsigned short),                 \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] * 6 * sizeof(unsigned short), \
+                  &G_index_buffer_sprites[GRAPHICS_PANELS_SPRITES_START_INDEX * 6]);
 
-  int pos_x;
-  int pos_y;
-
-  int cell_x;
-  int cell_y;
-
-  int lighting;
-  int palette;
-
-  /* draw the background */
-  for (n = 0; n < (GRAPHICS_PLAY_AREA_HEIGHT / 16); n++)
-  {
-    for (m = 0; m < (GRAPHICS_PLAY_AREA_WIDTH / 16); m++)
-    {
-      /* determine position */
-      pos_x = 16 * m + 8;
-      pos_y = 16 * n + 8;
-
-      /* determine texture coordinates */
-      if ((n >= 0) && (n <= 2))
-      {
-        cell_x = 56;
-        cell_y = 28;
-      }
-      else if ((n >= 3) && (n <= 6))
-      {
-        cell_x = 58;
-        cell_y = 28;
-      }
-      else if ((n >= 7) && (n <= 10))
-      {
-        cell_x = 56;
-        cell_y = 30;
-      }
-      else
-      {
-        cell_x = 58;
-        cell_y = 30;
-      }
-
-      /* set lighting and palette */
-      lighting = 0;
-      palette = 2;
-
-      VB_MENU_ADD_BACKGROUND_TO_BUFFERS(pos_x, pos_y, GRAPHICS_Z_LEVEL_MENU_BACKGROUND, 
-                                        cell_x, cell_y, lighting, palette)
-    }
-  }
-
-  return 0;
-}
+#define VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()                                                      \
+  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_sprites);                                          \
+  glBufferSubData(GL_ARRAY_BUFFER,                                                                    \
+                  GRAPHICS_OVERLAY_SPRITES_START_INDEX * 12 * sizeof(GLfloat),                        \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] * 12 * sizeof(GLfloat),        \
+                  &G_vertex_buffer_sprites[GRAPHICS_OVERLAY_SPRITES_START_INDEX * 12]);               \
+                                                                                                      \
+  glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_sprites);                                   \
+  glBufferSubData(GL_ARRAY_BUFFER,                                                                    \
+                  GRAPHICS_OVERLAY_SPRITES_START_INDEX * 8 * sizeof(GLfloat),                         \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] * 8 * sizeof(GLfloat),         \
+                  &G_texture_coord_buffer_sprites[GRAPHICS_OVERLAY_SPRITES_START_INDEX * 8]);         \
+                                                                                                      \
+  glBindBuffer(GL_ARRAY_BUFFER, G_lighting_and_palette_buffer_id_sprites);                            \
+  glBufferSubData(GL_ARRAY_BUFFER,                                                                    \
+                  GRAPHICS_OVERLAY_SPRITES_START_INDEX * 8 * sizeof(GLfloat),                         \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] * 8 * sizeof(GLfloat),         \
+                  &G_lighting_and_palette_buffer_sprites[GRAPHICS_OVERLAY_SPRITES_START_INDEX * 8]);  \
+                                                                                                      \
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, G_index_buffer_id_sprites);                                   \
+  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,                                                            \
+                  GRAPHICS_OVERLAY_SPRITES_START_INDEX * 6 * sizeof(unsigned short),                  \
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] * 6 * sizeof(unsigned short),  \
+                  &G_index_buffer_sprites[GRAPHICS_OVERLAY_SPRITES_START_INDEX * 6]);
 
 /*******************************************************************************
 ** vb_menu_load_panel()
@@ -273,6 +247,8 @@ short int vb_menu_load_panel(int offset_x, int offset_y, int width, int height)
 {
   int m;
   int n;
+
+  int sprite_index;
 
   int corner_x;
   int corner_y;
@@ -288,15 +264,15 @@ short int vb_menu_load_panel(int offset_x, int offset_y, int width, int height)
 
   /* make sure the width and height are valid       */
   /* the width & height are in terms of 16x16 tiles */
-  if ((width < 2) || (width > GRAPHICS_PLAY_AREA_WIDTH / 16))
+  if ((width < 2) || (width > GRAPHICS_OVERSCAN_WIDTH / 16))
     return 1;
 
-  if ((height < 2) || (height > GRAPHICS_PLAY_AREA_HEIGHT / 16))
+  if ((height < 2) || (height > GRAPHICS_OVERSCAN_HEIGHT / 16))
     return 1;
 
   /* determine coordinates of top left corner */
-  corner_x = (GRAPHICS_PLAY_AREA_WIDTH - 16 * width) / 2;
-  corner_y = (GRAPHICS_PLAY_AREA_HEIGHT - 16 * height) / 2;
+  corner_x = (GRAPHICS_OVERSCAN_WIDTH - 16 * width) / 2;
+  corner_y = (GRAPHICS_OVERSCAN_HEIGHT - 16 * height) / 2;
 
   /* the offsets from the screen center are in 4x4 half-cells */
   corner_x += 4 * offset_x;
@@ -306,13 +282,13 @@ short int vb_menu_load_panel(int offset_x, int offset_y, int width, int height)
   if (corner_x + (16 * width) < 0)
     return 1;
 
-  if (corner_x > GRAPHICS_PLAY_AREA_WIDTH)
+  if (corner_x > GRAPHICS_OVERSCAN_WIDTH)
     return 1;
 
   if (corner_y + (16 * height) < 0)
     return 1;
 
-  if (corner_y > GRAPHICS_PLAY_AREA_HEIGHT)
+  if (corner_y > GRAPHICS_OVERSCAN_HEIGHT)
     return 1;
 
   /* set lighting and palette */
@@ -320,6 +296,9 @@ short int vb_menu_load_panel(int offset_x, int offset_y, int width, int height)
   palette = 6;
 
   /* draw the panel */
+  sprite_index =  GRAPHICS_PANELS_SPRITES_START_INDEX + 
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS];
+
   for (n = 0; n < height; n++)
   {
     for (m = 0; m < width; m++)
@@ -383,10 +362,14 @@ short int vb_menu_load_panel(int offset_x, int offset_y, int width, int height)
         cell_y = 50;
       }
 
-      VB_MENU_ADD_PANEL_PIECE_TO_BUFFERS( pos_x, pos_y, GRAPHICS_Z_LEVEL_HUD_PANEL, 
+      VB_MENU_ADD_PANEL_PIECE_TO_BUFFERS( pos_x, pos_y, GRAPHICS_Z_LEVEL_PANELS, 
                                           cell_x, cell_y, lighting, palette)
     }
   }
+
+  /* update panels sprite layer count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 
+    sprite_index - GRAPHICS_PANELS_SPRITES_START_INDEX;
 
   return 0;
 }
@@ -400,6 +383,8 @@ short int vb_menu_load_text(int offset_x, int offset_y, int align,
   int k;
 
   int length;
+
+  int sprite_index;
 
   int start_x;
   int start_y;
@@ -430,8 +415,8 @@ short int vb_menu_load_text(int offset_x, int offset_y, int align,
 
   /* determine coordinates of center of first character */
   /* note that each character is 8x16                   */
-  start_x = (GRAPHICS_PLAY_AREA_WIDTH / 2);
-  start_y = (GRAPHICS_PLAY_AREA_HEIGHT / 2);
+  start_x = (GRAPHICS_OVERSCAN_WIDTH / 2);
+  start_y = (GRAPHICS_OVERSCAN_HEIGHT / 2);
 
   /* left:    the center of the first character is at the screen center */
   /* center:  the center of the whole string is at the screen center    */
@@ -451,13 +436,13 @@ short int vb_menu_load_text(int offset_x, int offset_y, int align,
   if (start_x + (8 * (length - 1)) + 4 < 0)
     return 1;
 
-  if (start_x - 4 > GRAPHICS_PLAY_AREA_WIDTH)
+  if (start_x - 4 > GRAPHICS_OVERSCAN_WIDTH)
     return 1;
 
   if (start_y + 8 < 0)
     return 1;
 
-  if (start_y - 8 > GRAPHICS_PLAY_AREA_HEIGHT)
+  if (start_y - 8 > GRAPHICS_OVERSCAN_HEIGHT)
     return 1;
 
   /* bound lighting and palette */
@@ -468,6 +453,9 @@ short int vb_menu_load_text(int offset_x, int offset_y, int align,
     palette = 0;
 
   /* draw the string */
+  sprite_index =  GRAPHICS_OVERLAY_SPRITES_START_INDEX + 
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY];
+
   for (k = 0; k < length; k++)
   {
     /* determine center of this character */
@@ -493,9 +481,13 @@ short int vb_menu_load_text(int offset_x, int offset_y, int align,
     else
       continue;
 
-    VB_MENU_ADD_FONT_CHARACTER_TO_BUFFERS(pos_x, pos_y, GRAPHICS_Z_LEVEL_HUD_TEXT, 
+    VB_MENU_ADD_FONT_CHARACTER_TO_BUFFERS(pos_x, pos_y, GRAPHICS_Z_LEVEL_OVERLAY, 
                                           cell_x, cell_y, lighting, palette)
   }
+
+  /* update overlay sprite layer count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 
+    sprite_index - GRAPHICS_OVERLAY_SPRITES_START_INDEX;
 
   return 0;
 }
@@ -559,6 +551,8 @@ short int vb_menu_load_percent( int offset_x, int offset_y, int align,
 short int vb_menu_load_cursor(int offset_x, int offset_y, 
                               int lighting, int palette)
 {
+  int sprite_index;
+
   int start_x;
   int start_y;
 
@@ -575,8 +569,8 @@ short int vb_menu_load_cursor(int offset_x, int offset_y,
 
   /* determine coordinates of center of first character */
   /* note that each character is 8x16                   */
-  start_x = (GRAPHICS_PLAY_AREA_WIDTH / 2);
-  start_y = (GRAPHICS_PLAY_AREA_HEIGHT / 2);
+  start_x = (GRAPHICS_OVERSCAN_WIDTH / 2);
+  start_y = (GRAPHICS_OVERSCAN_HEIGHT / 2);
 
   /* the offsets from the screen center are in 4x4 half-cells */
   start_x += 4 * offset_x;
@@ -586,13 +580,13 @@ short int vb_menu_load_cursor(int offset_x, int offset_y,
   if (start_x + 4 < 0)
     return 1;
 
-  if (start_x - 4 > GRAPHICS_PLAY_AREA_WIDTH)
+  if (start_x - 4 > GRAPHICS_OVERSCAN_WIDTH)
     return 1;
 
   if (start_y + 8 < 0)
     return 1;
 
-  if (start_y - 8 > GRAPHICS_PLAY_AREA_HEIGHT)
+  if (start_y - 8 > GRAPHICS_OVERSCAN_HEIGHT)
     return 1;
 
   /* bound lighting and palette */
@@ -602,12 +596,21 @@ short int vb_menu_load_cursor(int offset_x, int offset_y,
   if ((palette < 0) || (palette > 7))
     palette = 0;
 
-  /* draw the cursor */
+  /* set texture coordinates for cursor */
   cell_x = 31;
   cell_y = 58;
 
-  VB_MENU_ADD_FONT_CHARACTER_TO_BUFFERS(start_x, start_y, GRAPHICS_Z_LEVEL_HUD_TEXT, 
+  /* draw the cursor */
+  sprite_index =  GRAPHICS_OVERLAY_SPRITES_START_INDEX + 
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY];
+
+  VB_MENU_ADD_FONT_CHARACTER_TO_BUFFERS(start_x, start_y, GRAPHICS_Z_LEVEL_OVERLAY, 
                                         cell_x, cell_y, lighting, palette)
+
+  /* update overlay sprite layer count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 
+    sprite_index - GRAPHICS_OVERLAY_SPRITES_START_INDEX;
+
   return 0;
 }
 
@@ -649,6 +652,8 @@ short int vb_menu_load_slider(int offset_x, int offset_y, int align,
 *******************************************************************************/
 short int vb_menu_load_title_logo(int offset_x, int offset_y)
 {
+  int sprite_index;
+
   int center_x;
   int center_y;
 
@@ -659,8 +664,8 @@ short int vb_menu_load_title_logo(int offset_x, int offset_y)
   int palette;
 
   /* determine coordinates of center */
-  center_x = GRAPHICS_PLAY_AREA_WIDTH / 2;
-  center_y = GRAPHICS_PLAY_AREA_HEIGHT / 2;
+  center_x = GRAPHICS_OVERSCAN_WIDTH / 2;
+  center_y = GRAPHICS_OVERSCAN_HEIGHT / 2;
 
   /* the offsets from the screen center are in 4x4 half-cells */
   center_x += 4 * offset_x;
@@ -670,13 +675,13 @@ short int vb_menu_load_title_logo(int offset_x, int offset_y)
   if (center_x + 92 < 0)
     return 1;
 
-  if (center_x - 92 > GRAPHICS_PLAY_AREA_WIDTH)
+  if (center_x - 92 > GRAPHICS_OVERSCAN_WIDTH)
     return 1;
 
   if (center_y + 24 < 0)
     return 1;
 
-  if (center_y - 24 > GRAPHICS_PLAY_AREA_HEIGHT)
+  if (center_y - 24 > GRAPHICS_OVERSCAN_HEIGHT)
     return 1;
 
   /* set texture coordinates */
@@ -688,8 +693,15 @@ short int vb_menu_load_title_logo(int offset_x, int offset_y)
   palette = 0;
 
   /* draw the logo */
-  VB_MENU_ADD_TITLE_LOGO_TO_BUFFERS(center_x, center_y, GRAPHICS_Z_LEVEL_HUD_TEXT, 
+  sprite_index =  GRAPHICS_OVERLAY_SPRITES_START_INDEX + 
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY];
+
+  VB_MENU_ADD_TITLE_LOGO_TO_BUFFERS(center_x, center_y, GRAPHICS_Z_LEVEL_OVERLAY, 
                                     cell_x, cell_y, lighting, palette)
+
+  /* update overlay sprite layer count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 
+    sprite_index - GRAPHICS_OVERLAY_SPRITES_START_INDEX;
 
   return 0;
 }
@@ -699,6 +711,8 @@ short int vb_menu_load_title_logo(int offset_x, int offset_y)
 *******************************************************************************/
 short int vb_menu_load_world_select_icon(int offset_x, int offset_y, int icon)
 {
+  int sprite_index;
+
   int center_x;
   int center_y;
 
@@ -713,8 +727,8 @@ short int vb_menu_load_world_select_icon(int offset_x, int offset_y, int icon)
     return 1;
 
   /* determine coordinates of center */
-  center_x = GRAPHICS_PLAY_AREA_WIDTH / 2;
-  center_y = GRAPHICS_PLAY_AREA_HEIGHT / 2;
+  center_x = GRAPHICS_OVERSCAN_WIDTH / 2;
+  center_y = GRAPHICS_OVERSCAN_HEIGHT / 2;
 
   /* the offsets from the screen center are in 4x4 half-cells */
   center_x += 4 * offset_x;
@@ -724,13 +738,13 @@ short int vb_menu_load_world_select_icon(int offset_x, int offset_y, int icon)
   if (center_x + 16 < 0)
     return 1;
 
-  if (center_x - 16 > GRAPHICS_PLAY_AREA_WIDTH)
+  if (center_x - 16 > GRAPHICS_OVERSCAN_WIDTH)
     return 1;
 
   if (center_y + 16 < 0)
     return 1;
 
-  if (center_y - 16 > GRAPHICS_PLAY_AREA_HEIGHT)
+  if (center_y - 16 > GRAPHICS_OVERSCAN_HEIGHT)
     return 1;
 
   /* set texture coordinates */
@@ -760,8 +774,15 @@ short int vb_menu_load_world_select_icon(int offset_x, int offset_y, int icon)
   palette = 0;
 
   /* draw the logo */
-  VB_MENU_ADD_WORLD_SELECT_ICON_TO_BUFFERS( center_x, center_y, GRAPHICS_Z_LEVEL_HUD_TEXT, 
+  sprite_index =  GRAPHICS_OVERLAY_SPRITES_START_INDEX + 
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY];
+
+  VB_MENU_ADD_WORLD_SELECT_ICON_TO_BUFFERS( center_x, center_y, GRAPHICS_Z_LEVEL_OVERLAY, 
                                             cell_x, cell_y, lighting, palette)
+
+  /* update overlay sprite layer count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 
+    sprite_index - GRAPHICS_OVERLAY_SPRITES_START_INDEX;
 
   return 0;
 }
@@ -771,6 +792,8 @@ short int vb_menu_load_world_select_icon(int offset_x, int offset_y, int icon)
 *******************************************************************************/
 short int vb_menu_load_page_arrow_right()
 {
+  int sprite_index;
+
   int pos_x;
   int pos_y;
 
@@ -783,8 +806,8 @@ short int vb_menu_load_page_arrow_right()
   unsigned int adjusted_timer_count;
 
   /* set position */
-  pos_x = GRAPHICS_PLAY_AREA_WIDTH / 2;
-  pos_y = GRAPHICS_PLAY_AREA_HEIGHT / 2;
+  pos_x = GRAPHICS_OVERSCAN_WIDTH / 2;
+  pos_y = GRAPHICS_OVERSCAN_HEIGHT / 2;
 
   pos_x += 140;
   pos_y += 16;
@@ -808,8 +831,15 @@ short int vb_menu_load_page_arrow_right()
   palette = 0;
 
   /* draw the arrow */
-  VB_MENU_ADD_PAGE_ARROW_RIGHT_TO_BUFFERS(pos_x, pos_y, GRAPHICS_Z_LEVEL_HUD_TEXT,
+  sprite_index =  GRAPHICS_OVERLAY_SPRITES_START_INDEX + 
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY];
+
+  VB_MENU_ADD_PAGE_ARROW_RIGHT_TO_BUFFERS(pos_x, pos_y, GRAPHICS_Z_LEVEL_OVERLAY,
                                           cell_x, cell_y, lighting, palette)
+
+  /* update overlay sprite layer count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 
+    sprite_index - GRAPHICS_OVERLAY_SPRITES_START_INDEX;
 
   return 0;
 }
@@ -819,6 +849,8 @@ short int vb_menu_load_page_arrow_right()
 *******************************************************************************/
 short int vb_menu_load_page_arrow_left()
 {
+  int sprite_index;
+
   int pos_x;
   int pos_y;
 
@@ -831,8 +863,8 @@ short int vb_menu_load_page_arrow_left()
   unsigned int adjusted_timer_count;
 
   /* set position */
-  pos_x = GRAPHICS_PLAY_AREA_WIDTH / 2;
-  pos_y = GRAPHICS_PLAY_AREA_HEIGHT / 2;
+  pos_x = GRAPHICS_OVERSCAN_WIDTH / 2;
+  pos_y = GRAPHICS_OVERSCAN_HEIGHT / 2;
 
   pos_x -= 140;
   pos_y += 16;
@@ -856,74 +888,108 @@ short int vb_menu_load_page_arrow_left()
   palette = 0;
 
   /* draw the arrow */
-  VB_MENU_ADD_PAGE_ARROW_LEFT_TO_BUFFERS( pos_x, pos_y, GRAPHICS_Z_LEVEL_HUD_TEXT,
+  sprite_index =  GRAPHICS_OVERLAY_SPRITES_START_INDEX + 
+                  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY];
+
+  VB_MENU_ADD_PAGE_ARROW_LEFT_TO_BUFFERS( pos_x, pos_y, GRAPHICS_Z_LEVEL_OVERLAY,
                                           cell_x, cell_y, lighting, palette)
+
+  /* update overlay sprite layer count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 
+    sprite_index - GRAPHICS_OVERLAY_SPRITES_START_INDEX;
 
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_title_screen()
+** vb_menu_load_title_panels()
 *******************************************************************************/
-short int vb_menu_load_title_screen()
+short int vb_menu_load_title_panels()
 {
-  G_num_sprites = 0;
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  vb_menu_load_background();
+  /* menu panel */
+  vb_menu_load_panel(0, 3, 9, 6);
+
+  /* signature panel */
+  vb_menu_load_panel(0, 22, 14, 2);
+
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_title_overlay()
+*******************************************************************************/
+short int vb_menu_load_title_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
   /* title logo */
   vb_menu_load_title_logo(0, -20);
 
-  /* menu panel & text */
-  vb_menu_load_panel(0, 3, 9, 6);
-
+  /* menu text */
   vb_menu_load_text(-13, -5, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Play the Game!");
   vb_menu_load_text(-13, -1, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Options");
   vb_menu_load_text(-13,  3, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Help");
   vb_menu_load_text(-13,  7, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Credits");
   vb_menu_load_text(-13, 11, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Quit");
 
-  /* signature panel & text */
-  vb_menu_load_panel(0, 22, 14, 2);
+  /* signature text */
+  vb_menu_load_text(0, 22, VB_MENU_ALIGN_CENTER, 0, 6, 32, "2022 Michael Behrens v1.0x");
 
-  vb_menu_load_text(0, 22, VB_MENU_ALIGN_CENTER, 0, 6, 32, "2022 Michael Behrens v1.0d");
-
-  G_num_saved_sprites[0] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_title_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_title_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[0];
-
+  /* cursor */
   vb_menu_load_cursor(-15, -5 + (4 * G_screen_choice), 0, 0);
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_save_game_select_screen()
+** vb_menu_load_save_game_select_panels()
 *******************************************************************************/
-short int vb_menu_load_save_game_select_screen()
+short int vb_menu_load_save_game_select_panels()
 {
-  G_num_sprites = 0;
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  vb_menu_load_background();
-
-  /* screen name panel & text */
+  /* screen name panel */
   vb_menu_load_panel(0, -22, 10, 2);
 
+  /* save game panel */
+  if (G_save_game_percent != 0)
+    vb_menu_load_panel(0, 4, 10, 8);
+  else
+    vb_menu_load_panel(0, 4, 9, 5);
+
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_save_game_select_overlay()
+*******************************************************************************/
+short int vb_menu_load_save_game_select_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* screen name text */
   vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 18, "Select Save Game!");
 
-  /* save game panel & text */
+  /* save game text */
   if (G_save_game_percent != 0)
   {
-    vb_menu_load_panel(0, 4, 10, 8);
-
     if (G_screen_page == 0)
       vb_menu_load_text(0, -8, VB_MENU_ALIGN_CENTER, 0, 4, 16, "Save Game 1");
     else if (G_screen_page == 1)
@@ -940,8 +1006,6 @@ short int vb_menu_load_save_game_select_screen()
   }
   else
   {
-    vb_menu_load_panel(0, 4, 9, 5);
-
     if (G_screen_page == 0)
       vb_menu_load_text(0, -2, VB_MENU_ALIGN_CENTER, 0, 4, 16, "Save Game 1");
     else if (G_screen_page == 1)
@@ -954,49 +1018,58 @@ short int vb_menu_load_save_game_select_screen()
     vb_menu_load_text(-13, 10, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Start the Game!");
   }
 
-  G_num_saved_sprites[0] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_save_game_select_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_save_game_select_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[0];
-
+  /* cursor */
   if (G_save_game_percent != 0)
     vb_menu_load_cursor(-17, 8 + (4 * G_screen_choice), 0, 0);
   else
     vb_menu_load_cursor(-15, 10, 0, 0);
 
+  /* page arrows */
   if (G_screen_page > 0)
     vb_menu_load_page_arrow_left();
 
   if (G_screen_page < SCREEN_SAVE_GAME_SELECT_NUM_PAGES - 1)
     vb_menu_load_page_arrow_right();
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_confirm_clear_save_game_screen()
+** vb_menu_load_confirm_clear_save_game_panels()
 *******************************************************************************/
-short int vb_menu_load_confirm_clear_save_game_screen()
+short int vb_menu_load_confirm_clear_save_game_panels()
 {
-  G_num_sprites = 0;
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  vb_menu_load_background();
-
-  /* screen name panel & text */
+  /* screen name panel */
   vb_menu_load_panel(0, -22, 10, 2);
 
-  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 18, "Select Save Game!");
-
-  /* clear save game panel & text */
+  /* clear save game panel */
   vb_menu_load_panel(0, 4, 9, 6);
 
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_confirm_clear_save_game_overlay()
+*******************************************************************************/
+short int vb_menu_load_confirm_clear_save_game_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* screen name text */
+  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 18, "Select Save Game!");
+
+  /* clear save game text */
   if (G_save_game_current_slot == 1)
     vb_menu_load_text(0, -4, VB_MENU_ALIGN_CENTER, 0, 4, 16, "Save Game 1");
   else if (G_save_game_current_slot == 2)
@@ -1009,67 +1082,66 @@ short int vb_menu_load_confirm_clear_save_game_screen()
   vb_menu_load_text(-2,  8, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Yes");
   vb_menu_load_text(-2, 12, VB_MENU_ALIGN_LEFT, 0, 6, 16, "No");
 
-  G_num_saved_sprites[0] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_confirm_clear_save_game_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_confirm_clear_save_game_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[0];
-
+  /* cursor */
   vb_menu_load_cursor(-4, 8 + (4 * G_screen_choice), 0, 0);
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_world_select_screen()
+** vb_menu_load_world_select_panels()
 *******************************************************************************/
-short int vb_menu_load_world_select_screen()
+short int vb_menu_load_world_select_panels()
 {
-  int k;
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  G_num_sprites = 0;
-
-  vb_menu_load_background();
-
-  /* screen name panel & text */
+  /* screen name panel */
   vb_menu_load_panel(0, -22, 8, 2);
-
-  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Select World!");
 
   /* world select icon panel */
   vb_menu_load_panel(0, -8, 3, 3);
 
-  /* world names panel & text */
+  /* world names panel */
   vb_menu_load_panel(0, 12, 10, 5);
 
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_world_select_overlay()
+*******************************************************************************/
+short int vb_menu_load_world_select_overlay()
+{
+  int k;
+
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* screen name text */
+  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Select World!");
+
+  /* icon */
+  vb_menu_load_world_select_icon(0, -8, SCREEN_WORLD_SELECT_NUM_CHOICES * G_screen_page + G_screen_choice);
+
+  /* world names text */
   for (k = 0; k < SCREEN_WORLD_SELECT_NUM_CHOICES; k++)
   {
     vb_menu_load_text(-15, 6 + 4 * k, VB_MENU_ALIGN_LEFT, 0, 6, 
                       LEVEL_WORLD_NAME_SIZE, &G_world_names[SCREEN_WORLD_SELECT_NUM_CHOICES * G_screen_page + k][0]);
   }
 
-  G_num_saved_sprites[0] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_world_select_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_world_select_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[0];
-
-  vb_menu_load_world_select_icon(0, -8, SCREEN_WORLD_SELECT_NUM_CHOICES * G_screen_page + G_screen_choice);
-
+  /* cursor */
   vb_menu_load_cursor(-17, 6 + (4 * G_screen_choice), 0, 0);
 
+  /* page arrows */
   if (G_screen_page > 0)
     vb_menu_load_page_arrow_left();
 
@@ -1082,17 +1154,23 @@ short int vb_menu_load_world_select_screen_cursor()
     }
   }
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_room_select_screen()
+** vb_menu_load_room_select_panels()
 *******************************************************************************/
-short int vb_menu_load_room_select_screen()
+short int vb_menu_load_room_select_panels()
 {
   int k;
   int world_name_length;
-  int bound;
+
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
   /* determine length of world name */
   world_name_length = LEVEL_WORLD_NAME_SIZE;
@@ -1111,22 +1189,35 @@ short int vb_menu_load_room_select_screen()
   else if (world_name_length > LEVEL_WORLD_NAME_SIZE)
     world_name_length = LEVEL_WORLD_NAME_SIZE;
 
-  /* load room select */
-  G_num_sprites = 0;
-
-  vb_menu_load_background();
-
-  /* world name panel & text */
+  /* world name panel */
   if (world_name_length % 2 == 0)
     vb_menu_load_panel(0, -22, (world_name_length + 2) / 2, 2);
   else
     vb_menu_load_panel(0, -22, (world_name_length + 3) / 2, 2);
 
+  /* room names panel */
+  vb_menu_load_panel(0, 4, 14, 9);
+
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_room_select_overlay()
+*******************************************************************************/
+short int vb_menu_load_room_select_overlay()
+{
+  int k;
+  int bound;
+
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* world name text */
   vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 
                     LEVEL_WORLD_NAME_SIZE, &G_world_names[G_screen_alternate][0]);
-
-  /* room names panel & text */
-  vb_menu_load_panel(0, 4, 14, 9);
 
   /* compute bound for displayed room names */
   if (G_save_game_data[G_screen_alternate] <= 0)
@@ -1160,43 +1251,51 @@ short int vb_menu_load_room_select_screen()
                       8, "???");
   }
 
-  G_num_saved_sprites[0] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_room_select_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_room_select_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[0];
-
+  /* cursor */
   vb_menu_load_cursor(-25, -10 + (4 * G_screen_choice), 0, 0);
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_story_select_screen()
+** vb_menu_load_story_select_panels()
 *******************************************************************************/
-short int vb_menu_load_story_select_screen()
+short int vb_menu_load_story_select_panels()
+{
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* screen name panel */
+  vb_menu_load_panel(0, -22, 11, 2);
+
+  /* story scene names panel */
+  vb_menu_load_panel(0, 4, 12, 5);
+
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_story_select_overlay()
+*******************************************************************************/
+short int vb_menu_load_story_select_overlay()
 {
   int k;
   int bound;
 
-  G_num_sprites = 0;
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  vb_menu_load_background();
-
-  /* screen name panel & text */
-  vb_menu_load_panel(0, -22, 11, 2);
-
+  /* screen name text */
   vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 20, "Select Story Scene!");
 
-  /* story scene names panel & text */
-  vb_menu_load_panel(0, 4, 12, 5);
-
+  /* story scene names text */
   if (G_save_game_percent < 330)
     bound = 1;
   else if (G_save_game_percent < 660)
@@ -1218,31 +1317,26 @@ short int vb_menu_load_story_select_screen()
                       8, "???");
   }
 
-  G_num_saved_sprites[0] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_story_select_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_story_select_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[0];
-
+  /* cursor */
   vb_menu_load_cursor(-21, -2 + (4 * G_screen_choice), 0, 0);
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_story_scene_screen()
+** vb_menu_load_story_scene_panels()
 *******************************************************************************/
-short int vb_menu_load_story_scene_screen()
+short int vb_menu_load_story_scene_panels()
 {
   int k;
   int title_length;
-  int offset_y;
+
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
   /* determine length of story scene title */
   title_length = STORY_TITLE_SIZE;
@@ -1261,23 +1355,37 @@ short int vb_menu_load_story_scene_screen()
   else if (title_length > STORY_TITLE_SIZE)
     title_length = STORY_TITLE_SIZE;
 
-  /* load story scene */
-  G_num_sprites = 0;
-
-  vb_menu_load_background();
-
-  /* title panel & text */
+  /* title panel */
   if (title_length % 2 == 0)
     vb_menu_load_panel(0, -22, (title_length + 2) / 2, 2);
   else
     vb_menu_load_panel(0, -22, (title_length + 3) / 2, 2);
 
+  /* lines panel */
+  vb_menu_load_panel(0, 4, 17, 10);
+
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_story_scene_overlay()
+*******************************************************************************/
+short int vb_menu_load_story_scene_overlay()
+{
+  int k;
+  int offset_y;
+
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* title text */
   vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 
                     STORY_TITLE_SIZE, &G_story_scene_titles[G_screen_alternate][0]);
 
-  /* lines panel & text */
-  vb_menu_load_panel(0, 4, 17, 10);
-
+  /* lines text */
   offset_y = -12;
 
   for (k = 0; k < STORY_LINES_PER_SCENE; k++)
@@ -1296,69 +1404,69 @@ short int vb_menu_load_story_scene_screen()
       offset_y += 4;
   }
 
-  G_num_saved_sprites[0] = G_num_sprites;
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
 
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_options_screen()
+** vb_menu_load_options_panels()
 *******************************************************************************/
-short int vb_menu_load_options_screen()
+short int vb_menu_load_options_panels()
 {
-  G_num_sprites = G_num_saved_sprites[1];
-
-  vb_menu_load_background();
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
   /* options (part 1) */
   if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_STANDARD)
   {
-    /* screen name panel & text */
+    /* screen name panel */
     vb_menu_load_panel(0, -22, 5, 2);
 
+    /* options panel */
+    vb_menu_load_panel(0, 4, 14, 7);
+  }
+  /* more options (part 2) */
+  else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_MORE)
+  {
+    /* screen name panel */
+    vb_menu_load_panel(0, -22, 7, 2);
+
+    /* options panel */
+    vb_menu_load_panel(0, 4, 14, 6);
+  }
+
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_options_overlay()
+*******************************************************************************/
+short int vb_menu_load_options_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* options (part 1) */
+  if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_STANDARD)
+  {
+    /* screen name text */
     vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Options");
 
-    /* options panel & text */
-    vb_menu_load_panel(0, 4, 14, 7);
-
+    /* options text */
     vb_menu_load_text(-23, -6, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Window Size");
     vb_menu_load_text(-23, -2, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Fullscreen");
     vb_menu_load_text(-23,  2, VB_MENU_ALIGN_LEFT, 0, 6, 16, "V Sync");
     vb_menu_load_text(-23,  6, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Brightness");
     vb_menu_load_text(-23, 10, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Upscaling Mode");
     vb_menu_load_text(-23, 14, VB_MENU_ALIGN_LEFT, 0, 6, 16, "More Options");
-  }
-  /* more options (part 2) */
-  else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_MORE)
-  {
-    /* screen name panel & text */
-    vb_menu_load_panel(0, -22, 7, 2);
 
-    vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "More Options");
-
-    /* options panel & text */
-    vb_menu_load_panel(0, 4, 14, 6);
-
-    vb_menu_load_text(-23, -4, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Sound Volume");
-
-    vb_menu_load_text(-23, 12, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Menu Keys");
-  }
-
-  G_num_saved_sprites[2] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_options_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_options_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[2];
-
-  /* standard options */
-  if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_STANDARD)
-  {
+    /* cursor */
     vb_menu_load_cursor(-25, -6 + (4 * G_screen_choice), 0, 0);
 
     /* current resolution */
@@ -1396,9 +1504,31 @@ short int vb_menu_load_options_screen_cursor()
     else
       vb_menu_load_text(25, 10, VB_MENU_ALIGN_RIGHT, 0, 6, 16, "Linear");
   }
-  /* more options */
+  /* more options (part 2) */
   else if (G_screen_alternate == SCREEN_OPTIONS_ALTERNATE_MORE)
   {
+    /* screen name text */
+    vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "More Options");
+
+    /* options text */
+    vb_menu_load_text(-23, -4, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Sound Volume");
+
+    if (G_active_gamepad != CONTROLS_ACTIVE_GAMEPAD_NONE)
+    {
+      vb_menu_load_text(-23,  0, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Gamepad No.");
+      vb_menu_load_text(-23,  4, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Game Buttons");
+      vb_menu_load_text(-23,  8, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Menu Buttons");
+    }
+    else
+    {
+      vb_menu_load_text(-23,  0, VB_MENU_ALIGN_LEFT, -2, 6, 16, "Gamepad No.");
+      vb_menu_load_text(-23,  4, VB_MENU_ALIGN_LEFT, -2, 6, 16, "Game Buttons");
+      vb_menu_load_text(-23,  8, VB_MENU_ALIGN_LEFT, -2, 6, 16, "Menu Buttons");
+    }
+
+    vb_menu_load_text(-23, 12, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Menu Keys");
+
+    /* cursor */
     vb_menu_load_cursor(-25, -4 + (4 * G_screen_choice), 0, 0);
 
     /* sound volume slider */
@@ -1407,10 +1537,6 @@ short int vb_menu_load_options_screen_cursor()
     /* gamepad options */
     if (G_active_gamepad != CONTROLS_ACTIVE_GAMEPAD_NONE)
     {
-      vb_menu_load_text(-23,  0, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Gamepad No.");
-      vb_menu_load_text(-23,  4, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Game Buttons");
-      vb_menu_load_text(-23,  8, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Menu Buttons");
-
       if (G_active_gamepad == CONTROLS_ACTIVE_GAMEPAD_READY)
         vb_menu_load_text(25,  0, VB_MENU_ALIGN_RIGHT, 0, 6, 16, "???");
       else if (G_active_gamepad == CONTROLS_ACTIVE_GAMEPAD_1)
@@ -1434,10 +1560,6 @@ short int vb_menu_load_options_screen_cursor()
     }
     else
     {
-      vb_menu_load_text(-23,  0, VB_MENU_ALIGN_LEFT, -2, 6, 16, "Gamepad No.");
-      vb_menu_load_text(-23,  4, VB_MENU_ALIGN_LEFT, -2, 6, 16, "Game Buttons");
-      vb_menu_load_text(-23,  8, VB_MENU_ALIGN_LEFT, -2, 6, 16, "Menu Buttons");
-
       vb_menu_load_text(25,  0, VB_MENU_ALIGN_RIGHT, -2, 6, 16, "n/a");
       vb_menu_load_text(25,  4, VB_MENU_ALIGN_RIGHT, -2, 6, 16, "n/a");
       vb_menu_load_text(25,  8, VB_MENU_ALIGN_RIGHT, -2, 6, 16, "n/a");
@@ -1450,26 +1572,45 @@ short int vb_menu_load_options_screen_cursor()
       vb_menu_load_text(25, 12, VB_MENU_ALIGN_RIGHT, 0, 6, 16, "XZ");
   }
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_help_screen()
+** vb_menu_load_help_panels()
 *******************************************************************************/
-short int vb_menu_load_help_screen()
+short int vb_menu_load_help_panels()
 {
-  G_num_sprites = G_num_saved_sprites[1];
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  vb_menu_load_background();
-
-  /* screen name panel & text */
+  /* screen name panel */
   vb_menu_load_panel(0, -22, 3, 2);
 
-  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Help");
-
-  /* help panel & text */
+  /* help panel */
   vb_menu_load_panel(0, 4, 14, 9);
 
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_help_overlay()
+*******************************************************************************/
+short int vb_menu_load_help_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* screen name text */
+  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Help");
+
+  /* help text */
   if (G_screen_page == 0)
   {
     vb_menu_load_text(0, -10, VB_MENU_ALIGN_CENTER, 0, 4, 16, "Controls");
@@ -1544,44 +1685,52 @@ short int vb_menu_load_help_screen()
     vb_menu_load_text(0, 16, VB_MENU_ALIGN_CENTER, 0, 4, 16, "Have fun!");
   }
 
-  G_num_saved_sprites[2] = G_num_sprites;
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_help_screen_cursor()
-*******************************************************************************/
-short int vb_menu_load_help_screen_cursor()
-{
-  G_num_sprites = G_num_saved_sprites[2];
-
+  /* page arrows */
   if (G_screen_page > 0)
     vb_menu_load_page_arrow_left();
 
   if (G_screen_page < SCREEN_HELP_NUM_PAGES - 1)
     vb_menu_load_page_arrow_right();
 
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_credits_screen()
+** vb_menu_load_credits_panels()
 *******************************************************************************/
-short int vb_menu_load_credits_screen()
+short int vb_menu_load_credits_panels()
 {
-  G_num_sprites = G_num_saved_sprites[1];
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  vb_menu_load_background();
-
-  /* screen name panel & text */
+  /* screen name panel */
   vb_menu_load_panel(0, -22, 5, 2);
 
-  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Credits");
-
-  /* credits panel & text */
+  /* credits panel */
   vb_menu_load_panel(0, 4, 13, 9);
 
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_credits_overlay()
+*******************************************************************************/
+short int vb_menu_load_credits_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* screen name text */
+  vb_menu_load_text(0, -22, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Credits");
+
+  /* credits text */
   vb_menu_load_text(0, -10, VB_MENU_ALIGN_CENTER, 0, 6, 24, "Programming, Design,");
   vb_menu_load_text(0, -6, VB_MENU_ALIGN_CENTER, 0, 6, 24, "Story, Graphics,");
   vb_menu_load_text(0, -2, VB_MENU_ALIGN_CENTER, 0, 6, 24, "SFX, and Music by");
@@ -1591,18 +1740,23 @@ short int vb_menu_load_credits_screen()
   vb_menu_load_text(0, 14, VB_MENU_ALIGN_CENTER, 0, 6, 24, "You gotta get into it!");
   vb_menu_load_text(0, 18, VB_MENU_ALIGN_CENTER, 0, 6, 24, "You gotta get hyped!");
 
-  G_num_saved_sprites[2] = G_num_sprites;
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
 
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_room_intro_panel()
+** vb_menu_load_room_intro_panels()
 *******************************************************************************/
-short int vb_menu_load_room_intro_panel()
+short int vb_menu_load_room_intro_panels()
 {
   int i;
   int length;
+
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
   /* determine length of room name */
   length = LEVEL_ROOM_NAME_SIZE;
@@ -1622,107 +1776,160 @@ short int vb_menu_load_room_intro_panel()
     length = LEVEL_ROOM_NAME_SIZE;
 
   /* draw room intro panel */
-  G_num_sprites = G_num_saved_sprites[1];
-
   if (length % 2 == 0)
     vb_menu_load_panel(0, 0, (length + 2) / 2, 2);
   else
     vb_menu_load_panel(0, 0, (length + 3) / 2, 2);
 
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_room_intro_overlay()
+*******************************************************************************/
+short int vb_menu_load_room_intro_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* draw room intro text */
   vb_menu_load_text(0, 0, VB_MENU_ALIGN_CENTER, 0, 0, 
                     LEVEL_ROOM_NAME_SIZE, &G_room_names[G_current_room][0]);
 
-  G_num_saved_sprites[2] = G_num_sprites;
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
 
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_room_complete_panel()
+** vb_menu_load_room_complete_panels()
 *******************************************************************************/
-short int vb_menu_load_room_complete_panel()
+short int vb_menu_load_room_complete_panels()
 {
-  G_num_sprites = G_num_saved_sprites[1];
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
+  /* draw room complete panel */
   vb_menu_load_panel(0, 0, 8, 2);
 
-  vb_menu_load_text(0, 0, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Room Complete!");
-
-  G_num_saved_sprites[2] = G_num_sprites;
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
 
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_pause_panel()
+** vb_menu_load_room_complete_overlay()
 *******************************************************************************/
-short int vb_menu_load_pause_panel()
+short int vb_menu_load_room_complete_overlay()
 {
-  G_num_sprites = G_num_saved_sprites[1];
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
+  /* draw room complete text */
+  vb_menu_load_text(0, 0, VB_MENU_ALIGN_CENTER, 0, 0, 16, "Room Complete!");
+
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_pause_panels()
+*******************************************************************************/
+short int vb_menu_load_pause_panels()
+{
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* pause panel */
   vb_menu_load_panel(0, 0, 8, 6);
 
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_pause_overlay()
+*******************************************************************************/
+short int vb_menu_load_pause_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* pause text */
   vb_menu_load_text(-11, -8, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Back to Game");
   vb_menu_load_text(-11, -4, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Retry Room");
   vb_menu_load_text(-11,  0, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Options");
   vb_menu_load_text(-11,  4, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Help");
   vb_menu_load_text(-11,  8, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Room Select");
 
-  G_num_saved_sprites[2] = G_num_sprites;
+  /* cursor */
+  vb_menu_load_cursor(-13, -8 + (4 * G_screen_choice), 0, 0);
+
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
 
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_pause_panel_cursor()
+** vb_menu_load_retry_panels()
 *******************************************************************************/
-short int vb_menu_load_pause_panel_cursor()
+short int vb_menu_load_retry_panels()
 {
-  G_num_sprites = G_num_saved_sprites[2];
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
-  vb_menu_load_cursor(-13, -8 + (4 * G_screen_choice), 0, 1);
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_load_retry_panel()
-*******************************************************************************/
-short int vb_menu_load_retry_panel()
-{
-  G_num_sprites = G_num_saved_sprites[1];
-
+  /* retry panel */
   vb_menu_load_panel(0, 0, 4, 4);
 
+  /* update vbos */
+  VB_MENU_UPDATE_PANELS_SPRITES_IN_VBOS()
+
+  return 0;
+}
+
+/*******************************************************************************
+** vb_menu_load_retry_overlay()
+*******************************************************************************/
+short int vb_menu_load_retry_overlay()
+{
+  /* reset overlay sprite vbo count */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
+
+  /* retry text */
   vb_menu_load_text(0, -4, VB_MENU_ALIGN_CENTER, 0, 4, 8, "Retry?");
   vb_menu_load_text(-2,  0, VB_MENU_ALIGN_LEFT, 0, 6, 8, "Yes");
   vb_menu_load_text(-2,  4, VB_MENU_ALIGN_LEFT, 0, 6, 8, "No");
 
-  G_num_saved_sprites[2] = G_num_sprites;
+  /* cursor */
+  vb_menu_load_cursor(-4, 0 + (4 * G_screen_choice), 0, 0);
+
+  /* update vbos */
+  VB_MENU_UPDATE_OVERLAY_SPRITES_IN_VBOS()
 
   return 0;
 }
 
 /*******************************************************************************
-** vb_menu_load_retry_panel_cursor()
+** vb_menu_clear_panels_and_overlay()
 *******************************************************************************/
-short int vb_menu_load_retry_panel_cursor()
+short int vb_menu_clear_panels_and_overlay()
 {
-  G_num_sprites = G_num_saved_sprites[2];
-
-  vb_menu_load_cursor(-4, 0 + (4 * G_screen_choice), 0, 1);
-
-  return 0;
-}
-
-/*******************************************************************************
-** vb_menu_close_panel()
-*******************************************************************************/
-short int vb_menu_close_panel()
-{
-  G_num_sprites = G_num_saved_sprites[1];
-
-  G_num_saved_sprites[2] = G_num_sprites;
+  /* reset sprite vbo counts */
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_PANELS] = 0;
+  G_sprite_layer_counts[GRAPHICS_SPRITE_LAYER_OVERLAY] = 0;
 
   return 0;
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
-** texture.h (opengl texture management)
+** texture.h (opengl graphics rom data texture)
 *******************************************************************************/
 
 #ifndef TEXTURE_H
@@ -7,23 +7,18 @@
 
 #include <glad/glad.h>
 
-#define PALETTE_SIZE    64
-#define SUBPALETTE_SIZE 8
+#define TEXTURE_SIZE 512
 
-#define TEXTURE_SIZE    512
+extern GLuint G_texture_id_rom_data;
 
-#define NUM_TEXTURES    1
-
-extern GLuint G_palette_id;
-extern GLuint G_texture_ids[];
-
-extern GLint  G_subpalette_size;
+extern GLfloat G_texture_coord_table[65];
 
 /* function declarations */
-short int textures_init();
-short int textures_deinit();
+short int texture_generate_coord_table();
 
-short int texture_generate_palette();
+short int texture_init();
+short int texture_deinit();
+
 short int texture_load_all_from_file(char* filename);
 
 #endif

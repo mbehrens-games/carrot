@@ -16,7 +16,6 @@ int           G_screen_page;
 int           G_screen_choice;
 
 int           G_flag_world_complete;
-int           G_flag_redraw_grid_objects;
 int           G_flag_window_minimized;
 int           G_flag_window_fullscreen;
 int           G_flag_window_vsync;
@@ -49,7 +48,6 @@ short int globals_init_variables()
   G_screen_choice = 0;
 
   G_flag_world_complete = 0;
-  G_flag_redraw_grid_objects = 0;
   G_flag_window_minimized = 0;
   G_flag_window_fullscreen = 0;
   G_flag_window_vsync = 0;

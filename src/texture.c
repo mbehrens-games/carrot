@@ -1,5 +1,5 @@
 /*******************************************************************************
-** texture.c (opengl texture management)
+** texture.c (opengl graphics rom data texture)
 *******************************************************************************/
 
 #include <glad/glad.h>
@@ -11,295 +11,50 @@
 
 #include "texture.h"
 
-#define PI      3.14159265358979323846f
-#define TWO_PI  6.28318530717958647693f
+GLuint G_texture_id_rom_data;
 
-GLuint  G_palette_id;
-GLuint  G_texture_ids[NUM_TEXTURES];
-
-GLint   G_subpalette_size;
-
-/* the luma is the average of the low and high voltages */
-/* for the 1st half of each table, the low value is 0   */
-/* for the 2nd half of each table, the high value is 1  */
-/* the saturation is half of the peak-to-peak voltage   */
-
-float S_approx_nes_lum[4] = {0.20f, 0.35f, 0.65f, 0.85f};
-float S_approx_nes_sat[4] = {0.20f, 0.35f, 0.35f, 0.15f};
+GLfloat G_texture_coord_table[65];
 
 /*******************************************************************************
-** textures_init()
+** texture_generate_coord_table()
 *******************************************************************************/
-short int textures_init()
+short int texture_generate_coord_table()
 {
-  int i;
+  int k;
 
-  G_palette_id = 0;
+  /* texture coordinate table */
+  /* finding coordinates at the borders of a 8x8 cell on the texture  */
+  /* on a 512x512 texture, the pixel size is 1/512, so the borders    */
+  /* are at multiples of 8/512 = 1/64 = 0.015625                      */
+  for (k = 0; k < 64; k++)
+    G_texture_coord_table[k] = k * 0.015625f;
 
-  for (i = 0; i < NUM_TEXTURES; i++)
-    G_texture_ids[i] = 0;
+  G_texture_coord_table[64] = 1.0f;
 
   return 0;
 }
 
 /*******************************************************************************
-** textures_deinit()
+** texture_init()
 *******************************************************************************/
-short int textures_deinit()
+short int texture_init()
 {
-  int i;
-
-  /* clear palette id from opengl */
-  if (G_palette_id != 0)
-  {
-    glDeleteTextures(1, &(G_palette_id));
-    G_palette_id = 0;
-  }
-
-  /* clear all texture ids from opengl */
-  for (i = 0; i < NUM_TEXTURES; i++)
-  {
-    if (G_texture_ids[i] != 0)
-    {
-      glDeleteTextures(1, &(G_texture_ids[i]));
-      G_texture_ids[i] = 0;
-    }
-  }
+  G_texture_id_rom_data = 0;
 
   return 0;
 }
 
 /*******************************************************************************
-** texture_generate_palette()
+** texture_deinit()
 *******************************************************************************/
-short int texture_generate_palette()
+short int texture_deinit()
 {
-  int       m;
-  int       n;
-  int       k;
-
-  GLubyte   gradients[13][4][3];
-
-  float     y;
-  float     i;
-  float     q;
-
-  int       r;
-  int       g;
-  int       b;
-
-  GLubyte*  palette_data;
-
-  /* generate greys */
-  for (n = 0; n < 4; n++)
+  /* clear texture id from opengl */
+  if (G_texture_id_rom_data != 0)
   {
-    gradients[0][n][0] = (int) ((S_approx_nes_lum[n] * 255) + 0.5f);
-    gradients[0][n][1] = (int) ((S_approx_nes_lum[n] * 255) + 0.5f);
-    gradients[0][n][2] = (int) ((S_approx_nes_lum[n] * 255) + 0.5f);
+    glDeleteTextures(1, &(G_texture_id_rom_data));
+    G_texture_id_rom_data = 0;
   }
-
-  /* generate each hue */
-  for (m = 0; m < 12; m++)
-  {
-    for (n = 0; n < 4; n++)
-    {
-      y = S_approx_nes_lum[n];
-      i = S_approx_nes_sat[n] * cos(TWO_PI * (m * 30) / 360.0f);
-      q = S_approx_nes_sat[n] * sin(TWO_PI * (m * 30) / 360.0f);
-
-      r = (int) (((y + (i * 0.956f) + (q * 0.619f)) * 255) + 0.5f);
-      g = (int) (((y - (i * 0.272f) - (q * 0.647f)) * 255) + 0.5f);
-      b = (int) (((y - (i * 1.106f) + (q * 1.703f)) * 255) + 0.5f);
-
-      /* bound rgb values */
-      if (r < 0)
-        r = 0;
-      else if (r > 255)
-        r = 255;
-
-      if (g < 0)
-        g = 0;
-      else if (g > 255)
-        g = 255;
-
-      if (b < 0)
-        b = 0;
-      else if (b > 255)
-        b = 255;
-
-      gradients[m + 1][n][0] = r;
-      gradients[m + 1][n][1] = g;
-      gradients[m + 1][n][2] = b;
-    }
-  }
-
-  /* allocate palette data */
-  palette_data = malloc(sizeof(GLubyte) * 4 * PALETTE_SIZE * PALETTE_SIZE);
-
-  /* initialize palette data */
-  for (n = 0; n < PALETTE_SIZE * PALETTE_SIZE; n++)
-  {
-    palette_data[4 * n + 0] = 0;
-    palette_data[4 * n + 1] = 0;
-    palette_data[4 * n + 2] = 0;
-    palette_data[4 * n + 3] = 0;
-  }
-
-  /* generate palette 0 */
-
-  /* transparency color */
-  palette_data[4 * (4 * 64 + 0) + 0] = 0;
-  palette_data[4 * (4 * 64 + 0) + 1] = 0;
-  palette_data[4 * (4 * 64 + 0) + 2] = 0;
-  palette_data[4 * (4 * 64 + 0) + 3] = 0;
-
-  /* black */
-  palette_data[4 * (4 * 64 + 1) + 0] = 0;
-  palette_data[4 * (4 * 64 + 1) + 1] = 0;
-  palette_data[4 * (4 * 64 + 1) + 2] = 0;
-  palette_data[4 * (4 * 64 + 1) + 3] = 255;
-
-  /* greys */
-  for (n = 0; n < 4; n++)
-  {
-    palette_data[4 * (4 * 64 + n + 2) + 0] = gradients[0][n][0];
-    palette_data[4 * (4 * 64 + n + 2) + 1] = gradients[0][n][1];
-    palette_data[4 * (4 * 64 + n + 2) + 2] = gradients[0][n][2];
-    palette_data[4 * (4 * 64 + n + 2) + 3] = 255;
-  }
-
-  /* white */
-  palette_data[4 * (4 * 64 + 6) + 0] = 255;
-  palette_data[4 * (4 * 64 + 6) + 1] = 255;
-  palette_data[4 * (4 * 64 + 6) + 2] = 255;
-  palette_data[4 * (4 * 64 + 6) + 3] = 255;
-
-  /* hues */
-  for (m = 0; m < 12; m++)
-  {
-    for (n = 0; n < 4; n++)
-    {
-      palette_data[4 * (4 * 64 + 7 + 4 * m + n) + 0] = gradients[m + 1][n][0];
-      palette_data[4 * (4 * 64 + 7 + 4 * m + n) + 1] = gradients[m + 1][n][1];
-      palette_data[4 * (4 * 64 + 7 + 4 * m + n) + 2] = gradients[m + 1][n][2];
-      palette_data[4 * (4 * 64 + 7 + 4 * m + n) + 3] = 255;
-    }
-  }
-
-  /* generate lighting levels for palette 0 */
-  for (k = 0; k < 8; k++)
-  {
-    if (k == 4)
-      continue;
-
-    /* copy transparency color */
-    memcpy(&palette_data[4 * (k * 64 + 0)], &palette_data[4 * (4 * 64 + 0)], 4);
-
-    /* shadows */
-    if (k < 4)
-    {
-      /* greys */
-      for (m = 0; m < 4 - k + 1; m++)
-        memcpy(&palette_data[4 * (k * 64 + m + 1)], &palette_data[4 * (4 * 64 + 1)], 4);
-
-      memcpy(&palette_data[4 * (k * 64 + 4 - k + 2)], &palette_data[4 * (4 * 64 + 2)], 4 * (k + 1));
-
-      /* hues */
-      for (m = 0; m < 12; m++)
-      {
-        for (n = 0; n < 4 - k; n++)
-          memcpy(&palette_data[4 * (k * 64 + 4 * m + 7 + n)], &palette_data[4 * (4 * 64 + 1)], 4);
-
-        if (k != 0)
-          memcpy(&palette_data[4 * (k * 64 + 4 * m + 7 + 4 - k)], &palette_data[4 * (4 * 64 + 4 * m + 7)], 4 * k);
-      }
-    }
-    /* highlights */
-    else if (k > 4)
-    {
-      /* greys */
-      for (m = 0; m < k - 4 + 1; m++)
-        memcpy(&palette_data[4 * (k * 64 + (6 - m))], &palette_data[4 * (4 * 64 + 6)], 4);
-
-      memcpy(&palette_data[4 * (k * 64 + 1)], &palette_data[4 * (4 * 64 + (k - 4) + 1)], 4 * ((8 - k) + 1));
-
-      /* hues */
-      for (m = 0; m < 12; m++)
-      {
-        for (n = 0; n < k - 4; n++)
-          memcpy(&palette_data[4 * (k * 64 + 4 * m + 7 + (3 - n))], &palette_data[4 * (4 * 64 + 6)], 4);
-
-        memcpy(&palette_data[4 * (k * 64 + 4 * m + 7)], &palette_data[4 * (4 * 64 + 4 * m + 7 + (k - 4))], 4 * (8 - k));
-      }
-    }
-  }
-
-  /* generate palettes 1 - 5 (shift by 2 each time) */
-  for (m = 1; m < 6; m++)
-  {
-    for (n = 0; n < 8; n++)
-    {
-      /* transparency & greys */
-      memcpy(&palette_data[4 * ((8 * m + n) * 64 + 0)], &palette_data[4 * ((8 * (m - 1) + n) * 64 + 0)], 4 * 7);
-
-      /* shifted back colors */
-      memcpy(&palette_data[4 * ((8 * m + n) * 64 + 7)], &palette_data[4 * ((8 * (m - 1) + n) * 64 + 15)], 4 * 4 * 10);
-
-      /* cycled around colors */
-      memcpy(&palette_data[4 * ((8 * m + n) * 64 + 47)], &palette_data[4 * ((8 * (m - 1) + n) * 64 + 7)], 4 * 4 * 2);
-    }
-  }
-
-  /* generate palette 6 (greyscale) */
-  for (m = 0; m < 8; m++)
-  {
-    memcpy(&palette_data[4 * ((48 + m) * 64 + 0)], &palette_data[4 * (m * 64 + 0)], 4 * 7);
-
-    for (n = 0; n < 12; n++)
-      memcpy(&palette_data[4 * ((48 + m) * 64 + 4 * n + 7)], &palette_data[4 * (m * 64 + 2)], 4 * 4);
-  }
-
-  /* generate palette 7 (inverted greyscale) */
-  for (m = 0; m < 8; m++)
-  {
-    memcpy(&palette_data[4 * ((56 + m) * 64 + 0)], &palette_data[4 * (m * 64 + 0)], 4);
-
-    for (n = 1; n < 7; n++)
-    {
-      palette_data[4 * ((56 + m) * 64 + n) + 0] = palette_data[4 * (m * 64 + (7 - n)) + 0];
-      palette_data[4 * ((56 + m) * 64 + n) + 1] = palette_data[4 * (m * 64 + (7 - n)) + 1];
-      palette_data[4 * ((56 + m) * 64 + n) + 2] = palette_data[4 * (m * 64 + (7 - n)) + 2];
-      palette_data[4 * ((56 + m) * 64 + n) + 3] = palette_data[4 * (m * 64 + (7 - n)) + 3];
-    }
-
-    for (n = 0; n < 12; n++)
-      memcpy(&palette_data[4 * ((56 + m) * 64 + 4 * n + 7)], &palette_data[4 * ((56 + m) * 64 + 2)], 4 * 4);
-  }
-
-  /* assign gl texture id to the palette, set it to the current gl texture */
-  glGenTextures(1, &G_palette_id);
-  glBindTexture(GL_TEXTURE_2D, G_palette_id);
-
-  /* set up texture in opengl */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  /* load the texture to opengl from the palette data */
-  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, PALETTE_SIZE, PALETTE_SIZE, 
-                0, GL_RGBA, GL_UNSIGNED_BYTE, palette_data);
-
-  /* clear palette data */
-  if (palette_data != NULL)
-  {
-    free(palette_data);
-    palette_data = NULL;
-  }
-
-  /* set subpalette size */
-  G_subpalette_size = SUBPALETTE_SIZE;
 
   return 0;
 }
@@ -310,8 +65,6 @@ short int texture_generate_palette()
 short int texture_load_all_from_file(char* filename)
 {
   FILE* fp;
-
-  int   i;
 
   int   m;
   int   n;
@@ -373,54 +126,61 @@ short int texture_load_all_from_file(char* filename)
   }
 
   /* allocate image data */
-  image_data = malloc(sizeof(unsigned char) * (TEXTURE_SIZE * TEXTURE_SIZE / 4) * 3);
+  image_data = malloc(sizeof(unsigned char) * TEXTURE_SIZE * TEXTURE_SIZE);
 
   /* allocate texture data */
-  texture_data = malloc(sizeof(GLfloat) * TEXTURE_SIZE * TEXTURE_SIZE);
+  texture_data = malloc(sizeof(GLfloat) * 2 * TEXTURE_SIZE * TEXTURE_SIZE);
 
-  /* cycle through textures */
-  for (i = 0; i < NUM_TEXTURES; i++)
+  /* read image data from file */
+  if (fread(image_data, 1, TEXTURE_SIZE * TEXTURE_SIZE, fp) == 0)
   {
-    /* read image data from file */
-    if (fread(image_data, 1, (TEXTURE_SIZE * TEXTURE_SIZE / 4) * 3, fp) == 0)
-    {
-      free(image_data);
-      fclose(fp);
-      return 1;
-    }
-
-    /* convert to floating point texture data */
-    for (m = 0; m < TEXTURE_SIZE * TEXTURE_SIZE / 4; m++)
-    {
-      /* read 4 pixels from each set of 3 bytes         */
-      /* (the pixels in the image data are 6 bits each) */
-      buffer[0] = (image_data[3 * m + 0] >> 2) & 0x3F;
-      buffer[1] = ((image_data[3 * m + 0] << 4) & 0x30) | ((image_data[3 * m + 1] >> 4) & 0x0F);
-      buffer[2] = ((image_data[3 * m + 1] << 2) & 0x3C) | ((image_data[3 * m + 2] >> 6) & 0x03);
-      buffer[3] = image_data[3 * m + 2] & 0x3F;
-
-      /* finding coordinates at the center of a pixel on the palette texture  */
-      /* on a 64x64 texture, the pixel size is 1/64, so the centers           */
-      /* are at odd multiples of 1/128 = 0.0078125                            */
-      for (n = 0; n < 4; n++)
-        texture_data[4 * m + n] = (2 * buffer[n] + 1) * 0.0078125f;
-    }
-
-    /* assign gl texture id to this texture, set it to the current gl texture */
-    glGenTextures(1, &(G_texture_ids[i]));
-    glBindTexture(GL_TEXTURE_2D, G_texture_ids[i]);
-
-    /* set up texture in opengl */
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    /* load the texture to opengl from the texture data */
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_R32F, TEXTURE_SIZE, TEXTURE_SIZE, 
-                  0, GL_RED, GL_FLOAT, texture_data);
+    free(image_data);
+    fclose(fp);
+    return 1;
   }
+
+  /* convert to floating point texture data */
+  for (m = 0; m < TEXTURE_SIZE * TEXTURE_SIZE / 4; m++)
+  {
+    /* read 4 pixels from each set of 4 bytes         */
+    /* (the pixels in the image data are 8 bits each) */
+    buffer[0] = image_data[4 * m + 0];
+    buffer[1] = image_data[4 * m + 1];
+    buffer[2] = image_data[4 * m + 2];
+    buffer[3] = image_data[4 * m + 3];
+
+    /* write out each pixel to the texture    */
+    /* the 1st byte is the palette index      */
+    /* the 2nd byte is the transparency       */
+    for (n = 0; n < 4; n++)
+    {
+      /* find the coordinates at the center of a pixel on the palette   */
+      /* on a 256x256 texture, the pixel size is 1/256, so the centers  */
+      /* are at odd multiples of 1/512 = 0.001953125                    */
+      texture_data[2 * (4 * m + n) + 0] = (2 * buffer[n] + 1) * 0.001953125f;
+
+      /* set transparency (for sprite rendering) */
+      if (buffer[n] == 255)
+        texture_data[2 * (4 * m + n) + 1] = 0.0f;
+      else
+        texture_data[2 * (4 * m + n) + 1] = 1.0f;
+    }
+  }
+
+  /* assign gl texture id to this texture, set it to the current gl texture */
+  glGenTextures(1, &(G_texture_id_rom_data));
+  glBindTexture(GL_TEXTURE_2D, G_texture_id_rom_data);
+
+  /* set up texture in opengl */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  /* load the texture to opengl from the texture data */
+  glTexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TEXTURE_SIZE, TEXTURE_SIZE, 
+                0, GL_RG, GL_FLOAT, texture_data);
 
   /* close file */
   fclose(fp);

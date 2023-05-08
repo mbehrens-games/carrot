@@ -10,8 +10,7 @@
 /* function declarations */
 short int render_reset_vbos();
 
-short int render_scene_standard();
-short int render_scene_fade();
+short int render_scene_all();
 
 short int render_postprocessing_linear();
 short int render_postprocessing_pixels();

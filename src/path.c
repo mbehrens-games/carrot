@@ -73,7 +73,7 @@ short int path_obtain_base_paths()
 
   G_path_shader_data = malloc(sizeof(char) * (strlen(G_path_base) + 12 + 1));
   strcpy(G_path_shader_data, G_path_base);
-  strcpy(G_path_shader_data + strlen(G_path_base), "shader1b.dat");
+  strcpy(G_path_shader_data + strlen(G_path_base), "shader2a.dat");
 
   G_path_ost = malloc(sizeof(char) * (strlen(G_path_base) + 3 + 1));
   strcpy(G_path_ost, G_path_base);

@@ -88,7 +88,7 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
   controls_map_keyboard();
 
   /* title screen */
-  if (screen == GAME_SCREEN_TITLE)
+  if (G_game_screen == GAME_SCREEN_TITLE)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -100,11 +100,15 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_title_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_title_panels();
+    vb_menu_load_title_overlay();
+
     doremi_play_music(MUSIC_TRACK_MENU);
   }
   /* save game select */
-  else if (screen == GAME_SCREEN_SAVE_GAME_SELECT)
+  else if (G_game_screen == GAME_SCREEN_SAVE_GAME_SELECT)
   {
     G_screen_alternate = 0;
 
@@ -129,11 +133,15 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
     else
       save_game_set_slot(1);
 
-    vb_menu_load_save_game_select_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_save_game_select_panels();
+    vb_menu_load_save_game_select_overlay();
+
     doremi_play_music(MUSIC_TRACK_MENU);
   }
   /* confirm clear save game */
-  else if (screen == GAME_SCREEN_CONFIRM_CLEAR_SAVE_GAME)
+  else if (G_game_screen == GAME_SCREEN_CONFIRM_CLEAR_SAVE_GAME)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -145,10 +153,13 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_confirm_clear_save_game_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_confirm_clear_save_game_panels();
+    vb_menu_load_confirm_clear_save_game_overlay();
   }
   /* world select */
-  else if (screen == GAME_SCREEN_WORLD_SELECT)
+  else if (G_game_screen == GAME_SCREEN_WORLD_SELECT)
   {
     G_screen_alternate = 0;
 
@@ -164,11 +175,14 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_world_select_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_world_select_panels();
+    vb_menu_load_world_select_overlay();
     doremi_play_music(MUSIC_TRACK_MENU);
   }
   /* room select */
-  else if (screen == GAME_SCREEN_ROOM_SELECT)
+  else if (G_game_screen == GAME_SCREEN_ROOM_SELECT)
   {
     if ((alternate >= 0) && (alternate < SCREEN_ROOM_SELECT_NUM_ALTERNATES))
       G_screen_alternate = alternate;
@@ -184,10 +198,13 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_room_select_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_room_select_panels();
+    vb_menu_load_room_select_overlay();
   }
   /* story select */
-  else if (screen == GAME_SCREEN_STORY_SELECT)
+  else if (G_game_screen == GAME_SCREEN_STORY_SELECT)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -199,10 +216,13 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_story_select_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_story_select_panels();
+    vb_menu_load_story_select_overlay();
   }
   /* story scene */
-  else if (screen == GAME_SCREEN_STORY_SCENE)
+  else if (G_game_screen == GAME_SCREEN_STORY_SCENE)
   {
     if ((alternate >= 0) && (alternate < SCREEN_STORY_SCENE_NUM_ALTERNATES))
       G_screen_alternate = alternate;
@@ -214,11 +234,15 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_story_scene_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_story_scene_panels();
+    vb_menu_load_story_scene_overlay();
+
     doremi_play_music(MUSIC_TRACK_STORY);
   }
   /* options */
-  else if (screen == GAME_SCREEN_OPTIONS)
+  else if (G_game_screen == GAME_SCREEN_OPTIONS)
   {
     if ((alternate >= 0) && (alternate < SCREEN_OPTIONS_NUM_ALTERNATES))
       G_screen_alternate = alternate;
@@ -242,10 +266,14 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_options_screen();
+    if (G_last_screen == GAME_SCREEN_TITLE)
+      vb_tile_load_menu_background();
+
+    vb_menu_load_options_panels();
+    vb_menu_load_options_overlay();
   }
   /* help */
-  else if (screen == GAME_SCREEN_HELP)
+  else if (G_game_screen == GAME_SCREEN_HELP)
   {
     G_screen_alternate = 0;
 
@@ -258,10 +286,14 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_help_screen();
+    if (G_last_screen == GAME_SCREEN_TITLE)
+      vb_tile_load_menu_background();
+
+    vb_menu_load_help_panels();
+    vb_menu_load_help_overlay();
   }
   /* credits */
-  else if (screen == GAME_SCREEN_CREDITS)
+  else if (G_game_screen == GAME_SCREEN_CREDITS)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -269,10 +301,13 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_credits_screen();
+    vb_tile_load_menu_background();
+    vb_sprite_clear_grid_objects_and_things();
+    vb_menu_load_credits_panels();
+    vb_menu_load_credits_overlay();
   }
   /* playing */
-  else if (screen == GAME_SCREEN_PLAYING)
+  else if (G_game_screen == GAME_SCREEN_PLAYING)
   {
     if (alternate == SCREEN_PLAYING_ALTERNATE_LOAD_ROOM)
     {
@@ -321,8 +356,8 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
       G_timer_count = 0;
       game_loop_reset_room();
 
-      vb_sprite_load_grid_objects();
-      vb_sprite_load_things();
+      vb_sprite_load_grid_objects_and_things();
+      vb_menu_clear_panels_and_overlay();
     }
     else if (alternate == SCREEN_PLAYING_ALTERNATE_BACK_TO_GAME)
     {
@@ -348,7 +383,7 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
     }
   }
   /* room intro panel */
-  else if (screen == GAME_SCREEN_ROOM_INTRO_PANEL)
+  else if (G_game_screen == GAME_SCREEN_ROOM_INTRO_PANEL)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -356,12 +391,12 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_sprite_load_grid_objects();
-    vb_sprite_load_things();
-    vb_menu_load_room_intro_panel();
+    vb_sprite_load_grid_objects_and_things();
+    vb_menu_load_room_intro_panels();
+    vb_menu_load_room_intro_overlay();
   }
   /* room complete panel */
-  else if (screen == GAME_SCREEN_ROOM_COMPLETE_PANEL)
+  else if (G_game_screen == GAME_SCREEN_ROOM_COMPLETE_PANEL)
   {
     if (alternate == SCREEN_ROOM_COMPLETE_PANEL_ALTERNATE_STANDARD)
     {
@@ -371,9 +406,9 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
       save_game_mark_current_room_complete();
 
-      vb_sprite_load_grid_objects();
-      vb_sprite_load_things();
-      vb_menu_load_room_complete_panel();
+      vb_sprite_load_grid_objects_and_things();
+      vb_menu_load_room_complete_panels();
+      vb_menu_load_room_complete_overlay();
 
       G_timer_count = 0;
     }
@@ -411,15 +446,15 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
       save_game_mark_current_room_complete();
 
-      vb_sprite_load_grid_objects();
-      vb_sprite_load_things();
-      vb_menu_load_room_complete_panel();
+      vb_sprite_load_grid_objects_and_things();
+      vb_menu_load_room_complete_panels();
+      vb_menu_load_room_complete_overlay();
 
       G_timer_count = 0;
     }
   }
   /* pause panel */
-  else if (screen == GAME_SCREEN_PAUSE_PANEL)
+  else if (G_game_screen == GAME_SCREEN_PAUSE_PANEL)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -431,10 +466,11 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_pause_panel();
+    vb_menu_load_pause_panels();
+    vb_menu_load_pause_overlay();
   }
   /* retry panel */
-  else if (screen == GAME_SCREEN_RETRY_PANEL)
+  else if (G_game_screen == GAME_SCREEN_RETRY_PANEL)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -446,10 +482,11 @@ short int game_loop_change_screen(int screen, int alternate, int page, int choic
 
     G_timer_count = 0;
 
-    vb_menu_load_retry_panel();
+    vb_menu_load_retry_panels();
+    vb_menu_load_retry_overlay();
   }
   /* quit command issued */
-  else if (screen == GAME_SCREEN_QUIT)
+  else if (G_game_screen == GAME_SCREEN_QUIT)
   {
     G_screen_alternate = 0;
     G_screen_page = 0;
@@ -493,7 +530,6 @@ short int game_loop_advance_frame()
     /* process player input */
     if (G_game_screen == GAME_SCREEN_PLAYING)
     {
-      G_flag_redraw_grid_objects = 0;
       controls_process_player_input_gameplay();
     }
     else
@@ -538,63 +574,42 @@ short int game_loop_advance_frame()
 
   /* update vbos */
   if (G_game_screen == GAME_SCREEN_TITLE)
-  {
-    vb_menu_load_title_screen_cursor();
-  }
+    vb_menu_load_title_overlay();
   else if (G_game_screen == GAME_SCREEN_SAVE_GAME_SELECT)
-  {
-    vb_menu_load_save_game_select_screen_cursor();
-  }
+    vb_menu_load_save_game_select_overlay();
   else if (G_game_screen == GAME_SCREEN_CONFIRM_CLEAR_SAVE_GAME)
-  {
-    vb_menu_load_confirm_clear_save_game_screen_cursor();
-  }
+    vb_menu_load_confirm_clear_save_game_overlay();
   else if (G_game_screen == GAME_SCREEN_WORLD_SELECT)
-  {
-    vb_menu_load_world_select_screen_cursor();
-  }
+    vb_menu_load_world_select_overlay();
   else if (G_game_screen == GAME_SCREEN_ROOM_SELECT)
-  {
-    vb_menu_load_room_select_screen_cursor();
-  }
+    vb_menu_load_room_select_overlay();
   else if (G_game_screen == GAME_SCREEN_STORY_SELECT)
-  {
-    vb_menu_load_story_select_screen_cursor();
-  }
+    vb_menu_load_story_select_overlay();
+  else if (G_game_screen == GAME_SCREEN_STORY_SCENE)
+    vb_menu_load_story_scene_overlay();
   else if (G_game_screen == GAME_SCREEN_OPTIONS)
-  {
-    vb_menu_load_options_screen_cursor();
-  }
+    vb_menu_load_options_overlay();
   else if (G_game_screen == GAME_SCREEN_HELP)
-  {
-    vb_menu_load_help_screen_cursor();
-  }
+    vb_menu_load_help_overlay();
+  else if (G_game_screen == GAME_SCREEN_CREDITS)
+    vb_menu_load_credits_overlay();
   else if (G_game_screen == GAME_SCREEN_PLAYING)
   {
-    if ((G_timer_count % 6 == 0) || (G_flag_redraw_grid_objects == 1))
-      vb_sprite_load_grid_objects();
-
-    vb_sprite_load_things();
+    vb_sprite_load_grid_objects_and_things();
+    vb_menu_clear_panels_and_overlay();
   }
+  else if (G_game_screen == GAME_SCREEN_ROOM_INTRO_PANEL)
+    vb_menu_load_room_intro_overlay();
+  else if (G_game_screen == GAME_SCREEN_ROOM_COMPLETE_PANEL)
+    vb_menu_load_room_complete_overlay();
   else if (G_game_screen == GAME_SCREEN_PAUSE_PANEL)
-  {
-    vb_menu_load_pause_panel_cursor();
-  }
+    vb_menu_load_pause_overlay();
   else if (G_game_screen == GAME_SCREEN_RETRY_PANEL)
-  {
-    vb_menu_load_retry_panel_cursor();
-  }
+    vb_menu_load_retry_overlay();
 
-  /* rendering (first pass - tiles & sprites to overscan texture) */
-  if ((G_fade_state == FADE_STATE_FADEOUT) || 
-      (G_fade_state == FADE_STATE_FADEIN))
-  {
-    render_scene_fade();
-  }
-  else
-    render_scene_standard();
+  /* rendering */
+  render_scene_all();
 
-  /* rendering (second pass - from overscan texture to window) */
   if (G_upscaling_mode == VIDEO_UPSCALING_MODE_LINEAR)
     render_postprocessing_linear();
   else if (G_upscaling_mode == VIDEO_UPSCALING_MODE_PIXELS)

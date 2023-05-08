@@ -1439,9 +1439,6 @@ short int bunny_player_input_always_when_button_b_pressed()
           world_spawn_thing(THING_TYPE_HELD_MARBLE, color, state, THING_ORIENT_NORMAL, 
                             pos_x, pos_y, vel_x, vel_y, timer_offset);
 
-          /* set flag to redraw the grid this frame */
-          G_flag_redraw_grid_objects = 1;
-
           /* play grab sound */
           doremi_play_sfx(SFX_INDEX_BUNNY_GRAB);
 

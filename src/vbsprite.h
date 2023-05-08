@@ -6,7 +6,8 @@
 #define VB_SPRITE_H
 
 /* function declarations */
-short int vb_sprite_load_grid_objects();
-short int vb_sprite_load_things();
+short int vb_sprite_load_grid_objects_and_things();
+
+short int vb_sprite_clear_grid_objects_and_things();
 
 #endif

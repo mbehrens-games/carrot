@@ -22,7 +22,9 @@ extern int          G_fade_choice;
 extern unsigned int G_fade_timer;
 extern int          G_fade_state;
 extern int          G_fade_frame;
-extern GLint        G_fade_amount;
+
+extern GLfloat      G_fade_amount;
+extern GLfloat      G_fade_panels;
 
 /* function declarations */
 short int fade_init_variables();

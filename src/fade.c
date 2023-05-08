@@ -10,26 +10,37 @@
 #include "fade.h"
 #include "screen.h"
 
-#define FADE_FRAME_LENGTH   4
-#define FADE_NUM_FRAMES     4
+#define FADE_FRAME_LENGTH   2
+#define FADE_NUM_FRAMES     8
 
-int           G_fade_screen;
-int           G_fade_alternate;
-int           G_fade_page;
-int           G_fade_choice;
+int G_fade_screen;
+int G_fade_alternate;
+int G_fade_page;
+int G_fade_choice;
 
 unsigned int  G_fade_timer;
 int           G_fade_state;
 int           G_fade_frame;
-GLint         G_fade_amount;
 
-static int    S_fade_amount_table[FADE_NUM_FRAMES];
+GLfloat G_fade_amount;
+GLfloat G_fade_panels;
+
+static GLfloat S_fade_amount_table[FADE_NUM_FRAMES];
 
 /*******************************************************************************
 ** fade_init_variables()
 *******************************************************************************/
 short int fade_init_variables()
 {
+  int k;
+
+  /* fade amount table */
+  /* finding shift amounts, each the width of a pixel on the texture  */
+  /* on a 256x256 texture, the pixel size is 1/256, so the shift      */
+  /* amounts are multiples of 1/256 = 0.00390625                      */
+  for (k = 0; k < FADE_NUM_FRAMES; k++)
+    S_fade_amount_table[k] = (k + 1) * 0.00390625f;
+
   G_fade_screen = GAME_SCREEN_TITLE;
   G_fade_alternate = 0;
   G_fade_page = 0;
@@ -38,12 +49,9 @@ short int fade_init_variables()
   G_fade_timer = 0;
   G_fade_state = FADE_STATE_OFF;
   G_fade_frame = 0;
-  G_fade_amount = 0;
 
-  S_fade_amount_table[0] = 1;
-  S_fade_amount_table[1] = 2;
-  S_fade_amount_table[2] = 3;
-  S_fade_amount_table[3] = 4;
+  G_fade_amount = 0.0f;
+  G_fade_panels = S_fade_amount_table[(FADE_NUM_FRAMES / 2) - 1];
 
   return 0;
 }
@@ -118,7 +126,7 @@ short int fade_update_transition()
       G_fade_timer = 0;
       G_fade_state = FADE_STATE_OFF;
       G_fade_frame = 0;
-      G_fade_amount = 0;
+      G_fade_amount = 0.0f;
     }
   }
 

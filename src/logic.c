@@ -3460,9 +3460,6 @@ short int logic_land_thrown_things()
           /* despawn thing */
           world_despawn_thing(i);
 
-          /* set flag to redraw the grid this frame */
-          G_flag_redraw_grid_objects = 1;
-
           /* check for matches this frame */
           logic_marbles_check_for_matches();
 

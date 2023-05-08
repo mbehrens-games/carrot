@@ -7,5 +7,6 @@
 
 /* function declarations */
 short int vb_tile_load_background_tilemaps();
+short int vb_tile_load_menu_background();
 
 #endif

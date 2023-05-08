@@ -12,6 +12,7 @@
 #include "global.h"
 #include "graphics.h"
 #include "path.h"
+#include "shaders.h"
 
 /* sdl window, various sizes, etc */
 SDL_Window* G_sdl_window;
@@ -30,29 +31,25 @@ static int S_desktop_h;
 static int S_nearest_w;
 static int S_nearest_h;
 
-/* texture coordinate tables */
-GLfloat G_texture_coord_table[65];
-GLfloat G_palette_coord_table[64];
-
 /* vbo size variables */
-int G_num_tiles;
-int G_num_sprites;
-int G_num_saved_sprites[GRAPHICS_SAVED_SPRITE_LAYERS];
+int G_tile_layer_counts[GRAPHICS_NUM_TILE_LAYERS];
+int G_sprite_layer_counts[GRAPHICS_NUM_SPRITE_LAYERS];
 
 /* opengl vbo ids */
 GLuint G_vertex_array_id;
 
 GLuint G_vertex_buffer_id_tiles;
 GLuint G_texture_coord_buffer_id_tiles;
-GLuint G_palette_coord_buffer_id_tiles;
+GLuint G_lighting_and_palette_buffer_id_tiles;
 GLuint G_index_buffer_id_tiles;
 
 GLuint G_vertex_buffer_id_sprites;
 GLuint G_texture_coord_buffer_id_sprites;
-GLuint G_palette_coord_buffer_id_sprites;
+GLuint G_lighting_and_palette_buffer_id_sprites;
 GLuint G_index_buffer_id_sprites;
 
 /* postprocessing vbo ids */
+GLuint G_vertex_buffer_id_postprocessing_sky;
 GLuint G_vertex_buffer_id_postprocessing_overscan;
 GLuint G_vertex_buffer_id_postprocessing_nearest_resize;
 GLuint G_vertex_buffer_id_postprocessing_cubic_resize;
@@ -75,56 +72,18 @@ GLuint G_renderbuffer_id_intermediate_1;
 GLuint G_framebuffer_id_intermediate_2;
 GLuint G_renderbuffer_id_intermediate_2;
 
-/* shader program and uniform ids */
-GLuint G_program_id_A;
-GLuint G_program_id_B;
-GLuint G_program_id_C;
-GLuint G_program_id_D;
-GLuint G_program_id_E;
-GLuint G_program_id_OV1;
-GLuint G_program_id_OV2;
-
-GLuint G_uniform_A_mvp_matrix_id;
-GLuint G_uniform_A_texture_sampler_id;
-GLuint G_uniform_A_rgb2yiq_matrix_id;
-GLuint G_uniform_A_yiq2rgb_matrix_id;
-GLuint G_uniform_A_black_level_id;
-GLuint G_uniform_A_white_level_id;
-
-GLuint G_uniform_B_mvp_matrix_id;
-GLuint G_uniform_B_texture_sampler_id;
-
-GLuint G_uniform_C_mvp_matrix_id;
-GLuint G_uniform_C_texture_sampler_id;
-
-GLuint G_uniform_D_mvp_matrix_id;
-GLuint G_uniform_D_texture_sampler_id;
-GLuint G_uniform_D_cubic_matrix_id;
-
-GLuint G_uniform_E_mvp_matrix_id;
-GLuint G_uniform_E_texture_sampler_id;
-
-GLuint G_uniform_OV1_mvp_matrix_id;
-GLuint G_uniform_OV1_texture_sampler_id;
-GLuint G_uniform_OV1_palette_sampler_id;
-
-GLuint G_uniform_OV2_mvp_matrix_id;
-GLuint G_uniform_OV2_texture_sampler_id;
-GLuint G_uniform_OV2_palette_sampler_id;
-GLuint G_uniform_OV2_fade_amount_id;
-GLuint G_uniform_OV2_subpalette_size_id;
-
 /* vbos and matrices */
 GLfloat*          G_vertex_buffer_tiles;
 GLfloat*          G_texture_coord_buffer_tiles;
-GLfloat*          G_palette_coord_buffer_tiles;
+GLfloat*          G_lighting_and_palette_buffer_tiles;
 unsigned short*   G_index_buffer_tiles;
 
 GLfloat*          G_vertex_buffer_sprites;
 GLfloat*          G_texture_coord_buffer_sprites;
-GLfloat*          G_palette_coord_buffer_sprites;
+GLfloat*          G_lighting_and_palette_buffer_sprites;
 unsigned short*   G_index_buffer_sprites;
 
+GLfloat           G_vertex_buffer_postprocessing_sky[12];
 GLfloat           G_vertex_buffer_postprocessing_overscan[12];
 GLfloat           G_vertex_buffer_postprocessing_nearest_resize[12];
 GLfloat           G_vertex_buffer_postprocessing_cubic_resize[12];
@@ -136,370 +95,13 @@ GLfloat           G_texture_coord_buffer_postprocessing_cubic_resize[8];
 
 unsigned short    G_index_buffer_postprocessing_all[6];
 
+GLfloat           G_mvp_matrix_sky[16];
+GLfloat           G_mvp_matrix_tiles[16];
+GLfloat           G_mvp_matrix_sprites[16];
+
 GLfloat           G_mvp_matrix_overscan[16];
 GLfloat           G_mvp_matrix_intermediate[16];
 GLfloat           G_mvp_matrix_window[16];
-
-/*******************************************************************************
-** graphics_generate_tables()
-*******************************************************************************/
-short int graphics_generate_tables()
-{
-  int i;
-
-  /* texture coordinate table */
-  /* finding coordinates at the borders of a 8x8 cell on the texture  */
-  /* on a 512x512 texture, the pixel size is 1/512, so the borders    */
-  /* are at multiples of 8/512 = 1/64 = 0.015625                      */
-  for (i = 0; i < 64; i++)
-    G_texture_coord_table[i] = i * 0.015625f;
-
-  G_texture_coord_table[64] = 1.0f;
-
-  /* palette coordinate table */
-  /* finding coordinates at the center of a pixel on the texture  */
-  /* on a 64x64 texture, the pixel size is 1/64, so the centers   */
-  /* are at odd multiples of 1/128 = 0.0078125                    */
-  for (i = 0; i < 64; i++)
-    G_palette_coord_table[i] = (2 * i + 1) * 0.0078125f;
-
-  return 0;
-}
-
-/*******************************************************************************
-** graphics_compile_program()
-*******************************************************************************/
-short int graphics_compile_program( GLuint  program_id, 
-                                    GLchar* vert_source_string, 
-                                    GLint   vert_source_length, 
-                                    GLchar* frag_source_string, 
-                                    GLint   frag_source_length)
-{
-  GLuint  vertex_shader_id;
-  GLuint  fragment_shader_id;
-
-  const GLchar* string_array[1];
-  GLint         length_array[1];
-
-  GLint   compile_status;
-  GLint   link_status;
-  char    info_log[256];
-
-  /* create and compile vertex shader */
-  vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-
-  string_array[0] = vert_source_string;
-  length_array[0] = vert_source_length;
-
-  glShaderSource(vertex_shader_id, 1, string_array, length_array);
-  glCompileShader(vertex_shader_id);
-
-  /* make sure the shader compiled correctly */
-  glGetShaderiv(vertex_shader_id, GL_COMPILE_STATUS, &compile_status);
-
-  if (compile_status != GL_TRUE)
-  {
-    fprintf(stdout, "Failed to compile vertex shader.\n");
-
-    glGetShaderInfoLog(vertex_shader_id, 256, NULL, info_log);
-    fprintf(stdout, "Info Log: %s\n", info_log);
-
-    glDeleteShader(vertex_shader_id);
-
-    return 1;
-  }
-
-  /* create and compile fragment shader */
-  fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-
-  string_array[0] = frag_source_string;
-  length_array[0] = frag_source_length;
-
-  glShaderSource(fragment_shader_id, 1, string_array, length_array);
-  glCompileShader(fragment_shader_id);
-
-  /* make sure the shader compiled correctly */
-  glGetShaderiv(fragment_shader_id, GL_COMPILE_STATUS, &compile_status);
-
-  if (compile_status != GL_TRUE)
-  {
-    fprintf(stdout, "Failed to compile fragment shader.\n");
-
-    glGetShaderInfoLog(fragment_shader_id, 256, NULL, info_log);
-    fprintf(stdout, "Info Log: %s\n", info_log);
-
-    glDeleteShader(vertex_shader_id);
-    glDeleteShader(fragment_shader_id);
-
-    return 1;
-  }
-
-  /* link program */
-  glAttachShader(program_id, vertex_shader_id);
-  glAttachShader(program_id, fragment_shader_id);
-  glLinkProgram(program_id);
-
-  /* make sure the program was linked correctly */
-  glGetProgramiv(program_id, GL_LINK_STATUS, &link_status);
-
-  if (link_status != GL_TRUE)
-  {
-    fprintf(stdout, "Failed to link OpenGL program.\n");
-
-    glGetProgramInfoLog(program_id, 256, NULL, info_log);
-    fprintf(stdout, "Info Log: %s\n", info_log);
-
-    glDetachShader(program_id, vertex_shader_id);
-    glDetachShader(program_id, fragment_shader_id);
-
-    glDeleteShader(vertex_shader_id);
-    glDeleteShader(fragment_shader_id);
-
-    glDeleteProgram(program_id);
-    return 1;
-  }
-
-  /* cleanup */
-  glDetachShader(program_id, vertex_shader_id);
-  glDetachShader(program_id, fragment_shader_id);
-
-  glDeleteShader(vertex_shader_id);
-  glDeleteShader(fragment_shader_id);
-
-  return 0;
-}
-
-/*******************************************************************************
-** graphics_load_shaders()
-*******************************************************************************/
-short int graphics_load_shaders(char* filename)
-{
-  FILE*         fp;
-  int           i;
-  char          signature[8];
-
-  GLchar*       vert_source_string[GRAPHICS_NUM_SHADER_PROGRAMS];
-  GLint         vert_source_length[GRAPHICS_NUM_SHADER_PROGRAMS];
-
-  GLchar*       frag_source_string[GRAPHICS_NUM_SHADER_PROGRAMS];
-  GLint         frag_source_length[GRAPHICS_NUM_SHADER_PROGRAMS];
-
-  if (filename == NULL)
-    return 1;
-
-  /* open file */
-  fp = fopen(filename, "rb");
-
-  /* if file did not open, return error */
-  if (fp == NULL)
-    return 1;
-
-  /* read signature */
-  if (fread(signature, 1, 8, fp) < 8)
-  {
-    fclose(fp);
-    return 1;
-  }
-
-  if ((signature[0] != 'S') || 
-      (signature[1] != 'H') || 
-      (signature[2] != 'A') || 
-      (signature[3] != 'D') || 
-      (signature[4] != 'E') || 
-      (signature[5] != 'R') || 
-      (signature[6] != '1') || 
-      (signature[7] != 'B'))
-  {
-    fclose(fp);
-    return 1;
-  }
-
-  /* initialize source variables */
-  for (i = 0; i < GRAPHICS_NUM_SHADER_PROGRAMS; i++)
-  {
-    vert_source_string[i] = NULL;
-    vert_source_length[i] = 0;
-
-    frag_source_string[i] = NULL;
-    frag_source_length[i] = 0;
-  }
-
-  /* read shader sources */
-  for (i = 0; i < GRAPHICS_NUM_SHADER_PROGRAMS; i++)
-  {
-    /* vertex shader */
-    if (fread(&vert_source_length[i], 4, 1, fp) == 0)
-    {
-      fclose(fp);
-      return 1;
-    }
-
-    vert_source_string[i] = malloc(sizeof(GLchar) * (unsigned int) vert_source_length[i]);
-
-    if (fread(vert_source_string[i], 1, vert_source_length[i], fp) < (unsigned int) vert_source_length[i])
-    {
-      fclose(fp);
-      return 1;
-    }
-
-    /* fragment shader */
-    if (fread(&frag_source_length[i], 4, 1, fp) == 0)
-    {
-      fclose(fp);
-      return 1;
-    }
-
-    frag_source_string[i] = malloc(sizeof(GLchar) * (unsigned int) frag_source_length[i]);
-
-    if (fread(frag_source_string[i], 1, frag_source_length[i], fp) < (unsigned int) frag_source_length[i])
-    {
-      fclose(fp);
-      return 1;
-    }
-  }
-
-  /* close file */
-  fclose(fp);
-
-  /* create and compile programs */
-
-  /* apply brightness program */
-  G_program_id_A = glCreateProgram();
-
-  if (graphics_compile_program( G_program_id_A, 
-                                vert_source_string[GRAPHICS_SHADER_PROGRAM_A],
-                                vert_source_length[GRAPHICS_SHADER_PROGRAM_A],
-                                frag_source_string[GRAPHICS_SHADER_PROGRAM_A],
-                                frag_source_length[GRAPHICS_SHADER_PROGRAM_A]))
-  {
-    fprintf(stdout, "Failed to compile OpenGL program (apply brightness).\n");
-    glDeleteProgram(G_program_id_A);
-    return 1;
-  }
-
-  /* nearest upscale program */
-  G_program_id_B = glCreateProgram();
-
-  if (graphics_compile_program( G_program_id_B, 
-                                vert_source_string[GRAPHICS_SHADER_PROGRAM_B],
-                                vert_source_length[GRAPHICS_SHADER_PROGRAM_B],
-                                frag_source_string[GRAPHICS_SHADER_PROGRAM_B],
-                                frag_source_length[GRAPHICS_SHADER_PROGRAM_B]))
-  {
-    fprintf(stdout, "Failed to compile OpenGL program (nearest upscale).\n");
-    glDeleteProgram(G_program_id_A);
-    glDeleteProgram(G_program_id_B);
-    return 1;
-  }
-
-  /* linear upscale program */
-  G_program_id_C = glCreateProgram();
-
-  if (graphics_compile_program( G_program_id_C, 
-                                vert_source_string[GRAPHICS_SHADER_PROGRAM_C],
-                                vert_source_length[GRAPHICS_SHADER_PROGRAM_C],
-                                frag_source_string[GRAPHICS_SHADER_PROGRAM_C],
-                                frag_source_length[GRAPHICS_SHADER_PROGRAM_C]))
-  {
-    fprintf(stdout, "Failed to compile OpenGL program (linear upscale).\n");
-    glDeleteProgram(G_program_id_A);
-    glDeleteProgram(G_program_id_B);
-    glDeleteProgram(G_program_id_C);
-    return 1;
-  }
-
-  /* cubic horizontal resize program */
-  G_program_id_D = glCreateProgram();
-
-  if (graphics_compile_program( G_program_id_D, 
-                                vert_source_string[GRAPHICS_SHADER_PROGRAM_D],
-                                vert_source_length[GRAPHICS_SHADER_PROGRAM_D],
-                                frag_source_string[GRAPHICS_SHADER_PROGRAM_D],
-                                frag_source_length[GRAPHICS_SHADER_PROGRAM_D]))
-  {
-    fprintf(stdout, "Failed to compile OpenGL program (horizontal cubic).\n");
-    glDeleteProgram(G_program_id_A);
-    glDeleteProgram(G_program_id_B);
-    glDeleteProgram(G_program_id_C);
-    glDeleteProgram(G_program_id_D);
-    return 1;
-  }
-
-  /* scanline vertical resize program */
-  G_program_id_E = glCreateProgram();
-
-  if (graphics_compile_program( G_program_id_E, 
-                                vert_source_string[GRAPHICS_SHADER_PROGRAM_E],
-                                vert_source_length[GRAPHICS_SHADER_PROGRAM_E],
-                                frag_source_string[GRAPHICS_SHADER_PROGRAM_E],
-                                frag_source_length[GRAPHICS_SHADER_PROGRAM_E]))
-  {
-    fprintf(stdout, "Failed to compile OpenGL program (vertical scanlines).\n");
-    glDeleteProgram(G_program_id_A);
-    glDeleteProgram(G_program_id_B);
-    glDeleteProgram(G_program_id_C);
-    glDeleteProgram(G_program_id_D);
-    glDeleteProgram(G_program_id_E);
-    return 1;
-  }
-
-  /* overscan (standard) program */
-  G_program_id_OV1 = glCreateProgram();
-
-  if (graphics_compile_program( G_program_id_OV1, 
-                                vert_source_string[GRAPHICS_SHADER_PROGRAM_OV1],
-                                vert_source_length[GRAPHICS_SHADER_PROGRAM_OV1],
-                                frag_source_string[GRAPHICS_SHADER_PROGRAM_OV1],
-                                frag_source_length[GRAPHICS_SHADER_PROGRAM_OV1]))
-  {
-    fprintf(stdout, "Failed to compile OpenGL program (overscan standard).\n");
-    glDeleteProgram(G_program_id_A);
-    glDeleteProgram(G_program_id_B);
-    glDeleteProgram(G_program_id_C);
-    glDeleteProgram(G_program_id_D);
-    glDeleteProgram(G_program_id_E);
-    glDeleteProgram(G_program_id_OV1);
-    return 1;
-  }
-
-  /* overscan (fade) program */
-  G_program_id_OV2 = glCreateProgram();
-
-  if (graphics_compile_program( G_program_id_OV2, 
-                                vert_source_string[GRAPHICS_SHADER_PROGRAM_OV2],
-                                vert_source_length[GRAPHICS_SHADER_PROGRAM_OV2],
-                                frag_source_string[GRAPHICS_SHADER_PROGRAM_OV2],
-                                frag_source_length[GRAPHICS_SHADER_PROGRAM_OV2]))
-  {
-    fprintf(stdout, "Failed to compile OpenGL program (overscan fade).\n");
-    glDeleteProgram(G_program_id_A);
-    glDeleteProgram(G_program_id_B);
-    glDeleteProgram(G_program_id_C);
-    glDeleteProgram(G_program_id_D);
-    glDeleteProgram(G_program_id_E);
-    glDeleteProgram(G_program_id_OV1);
-    glDeleteProgram(G_program_id_OV2);
-    return 1;
-  }
-
-  /* free shader source strings */
-  for (i = 0; i < GRAPHICS_NUM_SHADER_PROGRAMS; i++)
-  {
-    if (vert_source_string[i] != NULL)
-    {
-      free(vert_source_string[i]);
-      vert_source_string[i] = NULL;
-    }
-
-    if (frag_source_string[i] != NULL)
-    {
-      free(frag_source_string[i]);
-      frag_source_string[i] = NULL;
-    }
-  }
-
-  return 0;
-}
 
 /*******************************************************************************
 ** graphics_create_opengl_objects()
@@ -513,44 +115,13 @@ short int graphics_create_opengl_objects()
   glGenVertexArrays(1, &G_vertex_array_id);
   glBindVertexArray(G_vertex_array_id);
 
-  /* compile glsl shaders */
-  if (graphics_load_shaders(G_path_shader_data))
+  /* create shader programs */
+  if (shaders_create_programs())
   {
-    fprintf(stdout, "Failed to compile GLSL shaders.\n");
+    fprintf(stdout, "Failed to create GLSL shader programs.\n");
     glDeleteVertexArrays(1, &G_vertex_array_id);
     return 1;
   }
-
-  /* obtain ids for uniform variables in the shaders */
-  G_uniform_A_mvp_matrix_id = glGetUniformLocation(G_program_id_A, "mvp_matrix");
-  G_uniform_A_texture_sampler_id = glGetUniformLocation(G_program_id_A, "texture_sampler");
-  G_uniform_A_rgb2yiq_matrix_id = glGetUniformLocation(G_program_id_A, "rgb2yiq_matrix");
-  G_uniform_A_yiq2rgb_matrix_id = glGetUniformLocation(G_program_id_A, "yiq2rgb_matrix");
-  G_uniform_A_black_level_id = glGetUniformLocation(G_program_id_A, "black_level");
-  G_uniform_A_white_level_id = glGetUniformLocation(G_program_id_A, "white_level");
-
-  G_uniform_B_mvp_matrix_id = glGetUniformLocation(G_program_id_B, "mvp_matrix");
-  G_uniform_B_texture_sampler_id = glGetUniformLocation(G_program_id_B, "texture_sampler");
-
-  G_uniform_C_mvp_matrix_id = glGetUniformLocation(G_program_id_C, "mvp_matrix");
-  G_uniform_C_texture_sampler_id = glGetUniformLocation(G_program_id_C, "texture_sampler");
-
-  G_uniform_D_mvp_matrix_id = glGetUniformLocation(G_program_id_D, "mvp_matrix");
-  G_uniform_D_texture_sampler_id = glGetUniformLocation(G_program_id_D, "texture_sampler");
-  G_uniform_D_cubic_matrix_id = glGetUniformLocation(G_program_id_D, "cubic_matrix");
-
-  G_uniform_E_mvp_matrix_id = glGetUniformLocation(G_program_id_E, "mvp_matrix");
-  G_uniform_E_texture_sampler_id = glGetUniformLocation(G_program_id_E, "texture_sampler");
-
-  G_uniform_OV1_mvp_matrix_id = glGetUniformLocation(G_program_id_OV1, "mvp_matrix");
-  G_uniform_OV1_texture_sampler_id = glGetUniformLocation(G_program_id_OV1, "texture_sampler");
-  G_uniform_OV1_palette_sampler_id = glGetUniformLocation(G_program_id_OV1, "palette_sampler");
-
-  G_uniform_OV2_mvp_matrix_id = glGetUniformLocation(G_program_id_OV2, "mvp_matrix");
-  G_uniform_OV2_texture_sampler_id = glGetUniformLocation(G_program_id_OV2, "texture_sampler");
-  G_uniform_OV2_palette_sampler_id = glGetUniformLocation(G_program_id_OV2, "palette_sampler");
-  G_uniform_OV2_fade_amount_id = glGetUniformLocation(G_program_id_OV2, "fade_amount");
-  G_uniform_OV2_subpalette_size_id = glGetUniformLocation(G_program_id_OV2, "subpalette_size");
 
   /* create intermediate texture 1 */
   glGenTextures(1, &G_texture_id_intermediate_1);
@@ -614,14 +185,77 @@ short int graphics_create_opengl_objects()
     return 1;
   }
 
+  /* orthographic projection matrix (sky) */
+  G_mvp_matrix_sky[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
+  G_mvp_matrix_sky[1]  = 0.0f;
+  G_mvp_matrix_sky[2]  = 0.0f;
+  G_mvp_matrix_sky[3]  = 0.0f;
+
+  G_mvp_matrix_sky[4]  = 0.0f;
+  G_mvp_matrix_sky[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
+  G_mvp_matrix_sky[6]  = 0.0f;
+  G_mvp_matrix_sky[7]  = 0.0f;
+
+  G_mvp_matrix_sky[8]  = 0.0f;
+  G_mvp_matrix_sky[9]  = 0.0f;
+  G_mvp_matrix_sky[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
+  G_mvp_matrix_sky[11] = 0.0f;
+
+  G_mvp_matrix_sky[12] = -1.0f;
+  G_mvp_matrix_sky[13] = 1.0f;
+  G_mvp_matrix_sky[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
+  G_mvp_matrix_sky[15] = 1.0f;
+
+  /* orthographic projection matrix (tiles) */
+  G_mvp_matrix_tiles[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
+  G_mvp_matrix_tiles[1]  = 0.0f;
+  G_mvp_matrix_tiles[2]  = 0.0f;
+  G_mvp_matrix_tiles[3]  = 0.0f;
+
+  G_mvp_matrix_tiles[4]  = 0.0f;
+  G_mvp_matrix_tiles[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
+  G_mvp_matrix_tiles[6]  = 0.0f;
+  G_mvp_matrix_tiles[7]  = 0.0f;
+
+  G_mvp_matrix_tiles[8]  = 0.0f;
+  G_mvp_matrix_tiles[9]  = 0.0f;
+  G_mvp_matrix_tiles[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
+  G_mvp_matrix_tiles[11] = 0.0f;
+
+  G_mvp_matrix_tiles[12] = -1.0f;
+  G_mvp_matrix_tiles[13] = 1.0f;
+  G_mvp_matrix_tiles[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
+  G_mvp_matrix_tiles[15] = 1.0f;
+
+  /* orthographic projection matrix (sprites) */
+  G_mvp_matrix_sprites[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
+  G_mvp_matrix_sprites[1]  = 0.0f;
+  G_mvp_matrix_sprites[2]  = 0.0f;
+  G_mvp_matrix_sprites[3]  = 0.0f;
+
+  G_mvp_matrix_sprites[4]  = 0.0f;
+  G_mvp_matrix_sprites[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
+  G_mvp_matrix_sprites[6]  = 0.0f;
+  G_mvp_matrix_sprites[7]  = 0.0f;
+
+  G_mvp_matrix_sprites[8]  = 0.0f;
+  G_mvp_matrix_sprites[9]  = 0.0f;
+  G_mvp_matrix_sprites[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
+  G_mvp_matrix_sprites[11] = 0.0f;
+
+  G_mvp_matrix_sprites[12] = -1.0f;
+  G_mvp_matrix_sprites[13] = 1.0f;
+  G_mvp_matrix_sprites[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
+  G_mvp_matrix_sprites[15] = 1.0f;
+
   /* orthographic projection matrix (overscan) */
-  G_mvp_matrix_overscan[0]  = 2.0f / GRAPHICS_OVERSCAN_OUTPUT_WIDTH;
+  G_mvp_matrix_overscan[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
   G_mvp_matrix_overscan[1]  = 0.0f;
   G_mvp_matrix_overscan[2]  = 0.0f;
   G_mvp_matrix_overscan[3]  = 0.0f;
 
   G_mvp_matrix_overscan[4]  = 0.0f;
-  G_mvp_matrix_overscan[5]  = -2.0f / GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
+  G_mvp_matrix_overscan[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
   G_mvp_matrix_overscan[6]  = 0.0f;
   G_mvp_matrix_overscan[7]  = 0.0f;
 
@@ -680,14 +314,15 @@ short int graphics_create_opengl_objects()
   /* create buffer objects */
   glGenBuffers(1, &G_vertex_buffer_id_tiles);
   glGenBuffers(1, &G_texture_coord_buffer_id_tiles);
-  glGenBuffers(1, &G_palette_coord_buffer_id_tiles);
+  glGenBuffers(1, &G_lighting_and_palette_buffer_id_tiles);
   glGenBuffers(1, &G_index_buffer_id_tiles);
 
   glGenBuffers(1, &G_vertex_buffer_id_sprites);
   glGenBuffers(1, &G_texture_coord_buffer_id_sprites);
-  glGenBuffers(1, &G_palette_coord_buffer_id_sprites);
+  glGenBuffers(1, &G_lighting_and_palette_buffer_id_sprites);
   glGenBuffers(1, &G_index_buffer_id_sprites);
 
+  glGenBuffers(1, &G_vertex_buffer_id_postprocessing_sky);
   glGenBuffers(1, &G_vertex_buffer_id_postprocessing_overscan);
   glGenBuffers(1, &G_vertex_buffer_id_postprocessing_nearest_resize);
   glGenBuffers(1, &G_vertex_buffer_id_postprocessing_cubic_resize);
@@ -702,12 +337,12 @@ short int graphics_create_opengl_objects()
   /* allocate buffers */
   G_vertex_buffer_tiles = malloc(sizeof(GLfloat) * 3 * 4 * GRAPHICS_MAX_TILES);
   G_texture_coord_buffer_tiles = malloc(sizeof(GLfloat) * 2 * 4 * GRAPHICS_MAX_TILES);
-  G_palette_coord_buffer_tiles = malloc(sizeof(GLfloat) * 1 * 4 * GRAPHICS_MAX_TILES);
+  G_lighting_and_palette_buffer_tiles = malloc(sizeof(GLfloat) * 2 * 4 * GRAPHICS_MAX_TILES);
   G_index_buffer_tiles = malloc(sizeof(unsigned short) * 6 * GRAPHICS_MAX_TILES);
 
   G_vertex_buffer_sprites = malloc(sizeof(GLfloat) * 3 * 4 * GRAPHICS_MAX_SPRITES);
   G_texture_coord_buffer_sprites = malloc(sizeof(GLfloat) * 2 * 4 * GRAPHICS_MAX_SPRITES);
-  G_palette_coord_buffer_sprites = malloc(sizeof(GLfloat) * 1 * 4 * GRAPHICS_MAX_SPRITES);
+  G_lighting_and_palette_buffer_sprites = malloc(sizeof(GLfloat) * 2 * 4 * GRAPHICS_MAX_SPRITES);
   G_index_buffer_sprites = malloc(sizeof(unsigned short) * 6 * GRAPHICS_MAX_SPRITES);
 
   /* initialize tile buffers */
@@ -719,8 +354,8 @@ short int graphics_create_opengl_objects()
     for (j = 0; j < 8; j++)
       G_texture_coord_buffer_tiles[(i * 8) + j] = 0.0f;
 
-    for (j = 0; j < 4; j++)
-      G_palette_coord_buffer_tiles[(i * 4) + j] = 0.0f;
+    for (j = 0; j < 8; j++)
+      G_lighting_and_palette_buffer_tiles[(i * 8) + j] = 0.0f;
 
     for (j = 0; j < 6; j++)
       G_index_buffer_tiles[(i * 6) + j] = 0;
@@ -734,9 +369,9 @@ short int graphics_create_opengl_objects()
   glBufferData( GL_ARRAY_BUFFER, GRAPHICS_MAX_TILES * 8 * sizeof(GLfloat),
                 G_texture_coord_buffer_tiles, GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ARRAY_BUFFER, G_palette_coord_buffer_id_tiles);
-  glBufferData( GL_ARRAY_BUFFER, GRAPHICS_MAX_TILES * 4 * sizeof(GLfloat),
-                G_palette_coord_buffer_tiles, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, G_lighting_and_palette_buffer_id_tiles);
+  glBufferData( GL_ARRAY_BUFFER, GRAPHICS_MAX_TILES * 8 * sizeof(GLfloat),
+                G_lighting_and_palette_buffer_tiles, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, G_index_buffer_id_tiles);
   glBufferData( GL_ELEMENT_ARRAY_BUFFER, GRAPHICS_MAX_TILES * 6 * sizeof(unsigned short),
@@ -751,8 +386,8 @@ short int graphics_create_opengl_objects()
     for (j = 0; j < 8; j++)
       G_texture_coord_buffer_sprites[(i * 8) + j] = 0.0f;
 
-    for (j = 0; j < 4; j++)
-      G_palette_coord_buffer_sprites[(i * 4) + j] = 0.0f;
+    for (j = 0; j < 8; j++)
+      G_lighting_and_palette_buffer_sprites[(i * 8) + j] = 0.0f;
 
     for (j = 0; j < 6; j++)
       G_index_buffer_sprites[(i * 6) + j] = 0;
@@ -766,30 +401,57 @@ short int graphics_create_opengl_objects()
   glBufferData( GL_ARRAY_BUFFER, GRAPHICS_MAX_SPRITES * 8 * sizeof(GLfloat),
                 G_texture_coord_buffer_sprites, GL_DYNAMIC_DRAW);
 
-  glBindBuffer(GL_ARRAY_BUFFER, G_palette_coord_buffer_id_sprites);
-  glBufferData( GL_ARRAY_BUFFER, GRAPHICS_MAX_SPRITES * 4 * sizeof(GLfloat),
-                G_palette_coord_buffer_sprites, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, G_lighting_and_palette_buffer_id_sprites);
+  glBufferData( GL_ARRAY_BUFFER, GRAPHICS_MAX_SPRITES * 8 * sizeof(GLfloat),
+                G_lighting_and_palette_buffer_sprites, GL_DYNAMIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, G_index_buffer_id_sprites);
   glBufferData( GL_ELEMENT_ARRAY_BUFFER, GRAPHICS_MAX_SPRITES * 6 * sizeof(unsigned short),
                 G_index_buffer_sprites, GL_DYNAMIC_DRAW);
 
+  /* initialize vbo counts */
+  for (i = 0; i < GRAPHICS_NUM_TILE_LAYERS; i++)
+    G_tile_layer_counts[i] = 0;
+
+  for (i = 0; i < GRAPHICS_NUM_SPRITE_LAYERS; i++)
+    G_sprite_layer_counts[i] = 0;
+
   /* set up postprocessing overscan vertex & texture coordinate buffers */
+  G_vertex_buffer_postprocessing_sky[0] = 0.0f;
+  G_vertex_buffer_postprocessing_sky[1] = 0.0f;
+  G_vertex_buffer_postprocessing_sky[2] = GRAPHICS_Z_LEVEL_SKY;
+
+  G_vertex_buffer_postprocessing_sky[3] = (GLfloat) GRAPHICS_OVERSCAN_WIDTH;
+  G_vertex_buffer_postprocessing_sky[4] = 0.0f;
+  G_vertex_buffer_postprocessing_sky[5] = GRAPHICS_Z_LEVEL_SKY;
+
+  G_vertex_buffer_postprocessing_sky[6] = 0.0f;
+  G_vertex_buffer_postprocessing_sky[7] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_sky[8] = GRAPHICS_Z_LEVEL_SKY;
+
+  G_vertex_buffer_postprocessing_sky[9] = (GLfloat) GRAPHICS_OVERSCAN_WIDTH;
+  G_vertex_buffer_postprocessing_sky[10] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_sky[11] = GRAPHICS_Z_LEVEL_SKY;
+
+  glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_sky);
+  glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
+                G_vertex_buffer_postprocessing_sky, GL_STATIC_DRAW);
+
   G_vertex_buffer_postprocessing_overscan[0] = 0.0f;
   G_vertex_buffer_postprocessing_overscan[1] = 0.0f;
-  G_vertex_buffer_postprocessing_overscan[2] = 0.5f;
+  G_vertex_buffer_postprocessing_overscan[2] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
-  G_vertex_buffer_postprocessing_overscan[3] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_WIDTH;
+  G_vertex_buffer_postprocessing_overscan[3] = (GLfloat) GRAPHICS_OVERSCAN_WIDTH;
   G_vertex_buffer_postprocessing_overscan[4] = 0.0f;
-  G_vertex_buffer_postprocessing_overscan[5] = 0.5f;
+  G_vertex_buffer_postprocessing_overscan[5] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_overscan[6] = 0.0f;
-  G_vertex_buffer_postprocessing_overscan[7] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
-  G_vertex_buffer_postprocessing_overscan[8] = 0.5f;
+  G_vertex_buffer_postprocessing_overscan[7] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_overscan[8] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
-  G_vertex_buffer_postprocessing_overscan[9] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_WIDTH;
-  G_vertex_buffer_postprocessing_overscan[10] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
-  G_vertex_buffer_postprocessing_overscan[11] = 0.5f;
+  G_vertex_buffer_postprocessing_overscan[9] = (GLfloat) GRAPHICS_OVERSCAN_WIDTH;
+  G_vertex_buffer_postprocessing_overscan[10] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_overscan[11] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_overscan);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -798,14 +460,14 @@ short int graphics_create_opengl_objects()
   G_texture_coord_buffer_postprocessing_overscan[0] = 0.0f;
   G_texture_coord_buffer_postprocessing_overscan[1] = 1.0f;
 
-  G_texture_coord_buffer_postprocessing_overscan[2] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_WIDTH / GRAPHICS_INTERMEDIATE_TEXTURE_WIDTH;
+  G_texture_coord_buffer_postprocessing_overscan[2] = (GLfloat) GRAPHICS_OVERSCAN_WIDTH / GRAPHICS_INTERMEDIATE_TEXTURE_WIDTH;
   G_texture_coord_buffer_postprocessing_overscan[3] = 1.0f;
 
   G_texture_coord_buffer_postprocessing_overscan[4] = 0.0f;
-  G_texture_coord_buffer_postprocessing_overscan[5] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
+  G_texture_coord_buffer_postprocessing_overscan[5] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
 
-  G_texture_coord_buffer_postprocessing_overscan[6] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_WIDTH / GRAPHICS_INTERMEDIATE_TEXTURE_WIDTH;
-  G_texture_coord_buffer_postprocessing_overscan[7] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
+  G_texture_coord_buffer_postprocessing_overscan[6] = (GLfloat) GRAPHICS_OVERSCAN_WIDTH / GRAPHICS_INTERMEDIATE_TEXTURE_WIDTH;
+  G_texture_coord_buffer_postprocessing_overscan[7] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_overscan);
   glBufferData( GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), 
@@ -814,19 +476,19 @@ short int graphics_create_opengl_objects()
   /* set up postprocessing nearest resize vertex & texture coordinate buffers */
   G_vertex_buffer_postprocessing_nearest_resize[0] = 0.0f;
   G_vertex_buffer_postprocessing_nearest_resize[1] = 0.0f;
-  G_vertex_buffer_postprocessing_nearest_resize[2] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[2] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_nearest_resize[3] = (GLfloat) S_nearest_w;
   G_vertex_buffer_postprocessing_nearest_resize[4] = 0.0f;
-  G_vertex_buffer_postprocessing_nearest_resize[5] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[5] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_nearest_resize[6] = 0.0f;
   G_vertex_buffer_postprocessing_nearest_resize[7] = (GLfloat) S_nearest_h;
-  G_vertex_buffer_postprocessing_nearest_resize[8] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[8] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_nearest_resize[9] = (GLfloat) S_nearest_w;
   G_vertex_buffer_postprocessing_nearest_resize[10] = (GLfloat) S_nearest_h;
-  G_vertex_buffer_postprocessing_nearest_resize[11] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[11] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_nearest_resize);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -851,19 +513,19 @@ short int graphics_create_opengl_objects()
   /* set up postprocessing cubic resize vertex & texture coordinate buffers */
   G_vertex_buffer_postprocessing_cubic_resize[0] = 0.0f;
   G_vertex_buffer_postprocessing_cubic_resize[1] = 0.0f;
-  G_vertex_buffer_postprocessing_cubic_resize[2] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[2] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_cubic_resize[3] = (GLfloat) S_window_w;
   G_vertex_buffer_postprocessing_cubic_resize[4] = 0.0f;
-  G_vertex_buffer_postprocessing_cubic_resize[5] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[5] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_cubic_resize[6] = 0.0f;
-  G_vertex_buffer_postprocessing_cubic_resize[7] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
-  G_vertex_buffer_postprocessing_cubic_resize[8] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[7] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_cubic_resize[8] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_cubic_resize[9] = (GLfloat) S_window_w;
-  G_vertex_buffer_postprocessing_cubic_resize[10] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
-  G_vertex_buffer_postprocessing_cubic_resize[11] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[10] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_cubic_resize[11] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_cubic_resize);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -876,10 +538,10 @@ short int graphics_create_opengl_objects()
   G_texture_coord_buffer_postprocessing_cubic_resize[3] = 1.0f;
 
   G_texture_coord_buffer_postprocessing_cubic_resize[4] = 0.0f;
-  G_texture_coord_buffer_postprocessing_cubic_resize[5] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
+  G_texture_coord_buffer_postprocessing_cubic_resize[5] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
 
   G_texture_coord_buffer_postprocessing_cubic_resize[6] = (GLfloat) S_window_w / GRAPHICS_INTERMEDIATE_TEXTURE_WIDTH;
-  G_texture_coord_buffer_postprocessing_cubic_resize[7] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
+  G_texture_coord_buffer_postprocessing_cubic_resize[7] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_cubic_resize);
   glBufferData( GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), 
@@ -888,19 +550,19 @@ short int graphics_create_opengl_objects()
   /* set up postprocessing window vertex buffer */
   G_vertex_buffer_postprocessing_window[0] = 0.0f;
   G_vertex_buffer_postprocessing_window[1] = 0.0f;
-  G_vertex_buffer_postprocessing_window[2] = 0.5f;
+  G_vertex_buffer_postprocessing_window[2] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[3] = (GLfloat) S_window_w;
   G_vertex_buffer_postprocessing_window[4] = 0.0f;
-  G_vertex_buffer_postprocessing_window[5] = 0.5f;
+  G_vertex_buffer_postprocessing_window[5] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[6] = 0.0f;
   G_vertex_buffer_postprocessing_window[7] = (GLfloat) S_window_h;
-  G_vertex_buffer_postprocessing_window[8] = 0.5f;
+  G_vertex_buffer_postprocessing_window[8] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[9] = (GLfloat) S_window_w;
   G_vertex_buffer_postprocessing_window[10] = (GLfloat) S_window_h;
-  G_vertex_buffer_postprocessing_window[11] = 0.5f;
+  G_vertex_buffer_postprocessing_window[11] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_window);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -930,14 +592,15 @@ short int graphics_destroy_opengl_objects()
   /* delete buffer objects */
   glDeleteBuffers(1, &G_vertex_buffer_id_tiles);
   glDeleteBuffers(1, &G_texture_coord_buffer_id_tiles);
-  glDeleteBuffers(1, &G_palette_coord_buffer_id_tiles);
+  glDeleteBuffers(1, &G_lighting_and_palette_buffer_id_tiles);
   glDeleteBuffers(1, &G_index_buffer_id_tiles);
 
   glDeleteBuffers(1, &G_vertex_buffer_id_sprites);
   glDeleteBuffers(1, &G_texture_coord_buffer_id_sprites);
-  glDeleteBuffers(1, &G_palette_coord_buffer_id_sprites);
+  glDeleteBuffers(1, &G_lighting_and_palette_buffer_id_sprites);
   glDeleteBuffers(1, &G_index_buffer_id_sprites);
 
+  glDeleteBuffers(1, &G_vertex_buffer_id_postprocessing_sky);
   glDeleteBuffers(1, &G_vertex_buffer_id_postprocessing_overscan);
   glDeleteBuffers(1, &G_vertex_buffer_id_postprocessing_nearest_resize);
   glDeleteBuffers(1, &G_vertex_buffer_id_postprocessing_cubic_resize);
@@ -961,13 +624,7 @@ short int graphics_destroy_opengl_objects()
   glDeleteTextures(1, &G_texture_id_intermediate_2);
 
   /* delete opengl shader programs */
-  glDeleteProgram(G_program_id_A);
-  glDeleteProgram(G_program_id_B);
-  glDeleteProgram(G_program_id_C);
-  glDeleteProgram(G_program_id_D);
-  glDeleteProgram(G_program_id_E);
-  glDeleteProgram(G_program_id_OV1);
-  glDeleteProgram(G_program_id_OV2);
+  shaders_destroy_programs();
 
   /* delete vertex array object */
   glDeleteVertexArrays(1, &G_vertex_array_id);
@@ -985,10 +642,10 @@ short int graphics_destroy_opengl_objects()
     G_texture_coord_buffer_tiles = NULL;
   }
 
-  if (G_palette_coord_buffer_tiles != NULL)
+  if (G_lighting_and_palette_buffer_tiles != NULL)
   {
-    free(G_palette_coord_buffer_tiles);
-    G_palette_coord_buffer_tiles = NULL;
+    free(G_lighting_and_palette_buffer_tiles);
+    G_lighting_and_palette_buffer_tiles = NULL;
   }
 
   if (G_index_buffer_tiles != NULL)
@@ -1010,10 +667,10 @@ short int graphics_destroy_opengl_objects()
     G_texture_coord_buffer_sprites = NULL;
   }
 
-  if (G_palette_coord_buffer_sprites != NULL)
+  if (G_lighting_and_palette_buffer_sprites != NULL)
   {
-    free(G_palette_coord_buffer_sprites);
-    G_palette_coord_buffer_sprites = NULL;
+    free(G_lighting_and_palette_buffer_sprites);
+    G_lighting_and_palette_buffer_sprites = NULL;
   }
 
   if (G_index_buffer_sprites != NULL)
@@ -1026,18 +683,106 @@ short int graphics_destroy_opengl_objects()
 }
 
 /*******************************************************************************
+** graphics_setup_sky_mvp_matrix()
+*******************************************************************************/
+short int graphics_setup_sky_mvp_matrix(int t_x, int t_y)
+{
+  /* orthographic projection matrix (sky) */
+  G_mvp_matrix_sky[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
+  G_mvp_matrix_sky[1]  = 0.0f;
+  G_mvp_matrix_sky[2]  = 0.0f;
+  G_mvp_matrix_sky[3]  = 0.0f;
+
+  G_mvp_matrix_sky[4]  = 0.0f;
+  G_mvp_matrix_sky[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
+  G_mvp_matrix_sky[6]  = 0.0f;
+  G_mvp_matrix_sky[7]  = 0.0f;
+
+  G_mvp_matrix_sky[8]  = 0.0f;
+  G_mvp_matrix_sky[9]  = 0.0f;
+  G_mvp_matrix_sky[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
+  G_mvp_matrix_sky[11] = 0.0f;
+
+  G_mvp_matrix_sky[12] = ((2.0f * t_x) / GRAPHICS_OVERSCAN_WIDTH) - 1.0f;
+  G_mvp_matrix_sky[13] = ((-2.0f * t_y) / GRAPHICS_OVERSCAN_HEIGHT) + 1.0f;
+  G_mvp_matrix_sky[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
+  G_mvp_matrix_sky[15] = 1.0f;
+
+  return 0;
+}
+
+/*******************************************************************************
+** graphics_setup_tiles_mvp_matrix()
+*******************************************************************************/
+short int graphics_setup_tiles_mvp_matrix(int t_x, int t_y)
+{
+  /* orthographic projection matrix (tiles) */
+  G_mvp_matrix_tiles[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
+  G_mvp_matrix_tiles[1]  = 0.0f;
+  G_mvp_matrix_tiles[2]  = 0.0f;
+  G_mvp_matrix_tiles[3]  = 0.0f;
+
+  G_mvp_matrix_tiles[4]  = 0.0f;
+  G_mvp_matrix_tiles[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
+  G_mvp_matrix_tiles[6]  = 0.0f;
+  G_mvp_matrix_tiles[7]  = 0.0f;
+
+  G_mvp_matrix_tiles[8]  = 0.0f;
+  G_mvp_matrix_tiles[9]  = 0.0f;
+  G_mvp_matrix_tiles[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
+  G_mvp_matrix_tiles[11] = 0.0f;
+
+  G_mvp_matrix_tiles[12] = ((2.0f * t_x) / GRAPHICS_OVERSCAN_WIDTH) - 1.0f;
+  G_mvp_matrix_tiles[13] = ((-2.0f * t_y) / GRAPHICS_OVERSCAN_HEIGHT) + 1.0f;
+  G_mvp_matrix_tiles[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
+  G_mvp_matrix_tiles[15] = 1.0f;
+
+  return 0;
+}
+
+/*******************************************************************************
+** graphics_setup_sprites_mvp_matrix()
+*******************************************************************************/
+short int graphics_setup_sprites_mvp_matrix(int t_x, int t_y)
+{
+  /* orthographic projection matrix (sprites) */
+  G_mvp_matrix_sprites[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
+  G_mvp_matrix_sprites[1]  = 0.0f;
+  G_mvp_matrix_sprites[2]  = 0.0f;
+  G_mvp_matrix_sprites[3]  = 0.0f;
+
+  G_mvp_matrix_sprites[4]  = 0.0f;
+  G_mvp_matrix_sprites[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
+  G_mvp_matrix_sprites[6]  = 0.0f;
+  G_mvp_matrix_sprites[7]  = 0.0f;
+
+  G_mvp_matrix_sprites[8]  = 0.0f;
+  G_mvp_matrix_sprites[9]  = 0.0f;
+  G_mvp_matrix_sprites[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
+  G_mvp_matrix_sprites[11] = 0.0f;
+
+  G_mvp_matrix_sprites[12] = ((2.0f * t_x) / GRAPHICS_OVERSCAN_WIDTH) - 1.0f;
+  G_mvp_matrix_sprites[13] = ((-2.0f * t_y) / GRAPHICS_OVERSCAN_HEIGHT) + 1.0f;
+  G_mvp_matrix_sprites[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
+  G_mvp_matrix_sprites[15] = 1.0f;
+
+  return 0;
+}
+
+#if 0
+/*******************************************************************************
 ** graphics_setup_overscan_mvp_matrix()
 *******************************************************************************/
-short int graphics_setup_overscan_mvp_matrix(int t_x, int t_y)
+short int graphics_setup_overscan_mvp_matrix()
 {
   /* orthographic projection matrix (overscan) */
-  G_mvp_matrix_overscan[0]  = 2.0f / GRAPHICS_OVERSCAN_OUTPUT_WIDTH;
+  G_mvp_matrix_overscan[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
   G_mvp_matrix_overscan[1]  = 0.0f;
   G_mvp_matrix_overscan[2]  = 0.0f;
   G_mvp_matrix_overscan[3]  = 0.0f;
 
   G_mvp_matrix_overscan[4]  = 0.0f;
-  G_mvp_matrix_overscan[5]  = -2.0f / GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
+  G_mvp_matrix_overscan[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
   G_mvp_matrix_overscan[6]  = 0.0f;
   G_mvp_matrix_overscan[7]  = 0.0f;
 
@@ -1046,13 +791,14 @@ short int graphics_setup_overscan_mvp_matrix(int t_x, int t_y)
   G_mvp_matrix_overscan[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
   G_mvp_matrix_overscan[11] = 0.0f;
 
-  G_mvp_matrix_overscan[12] = ((2.0f * t_x) / GRAPHICS_OVERSCAN_OUTPUT_WIDTH) - 1.0f;
-  G_mvp_matrix_overscan[13] = ((-2.0f * t_y) / GRAPHICS_OVERSCAN_OUTPUT_HEIGHT) + 1.0f;
+  G_mvp_matrix_overscan[12] = -1.0f;
+  G_mvp_matrix_overscan[13] = 1.0f;
   G_mvp_matrix_overscan[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
   G_mvp_matrix_overscan[15] = 1.0f;
 
   return 0;
 }
+#endif
 
 /*******************************************************************************
 ** graphics_set_graphics_resolution()
@@ -1156,19 +902,19 @@ short int graphics_setup_viewport_windowed()
   /* set up postprocessing window vertex buffer object */
   G_vertex_buffer_postprocessing_window[0] = 0.0f;
   G_vertex_buffer_postprocessing_window[1] = 0.0f;
-  G_vertex_buffer_postprocessing_window[2] = 0.5f;
+  G_vertex_buffer_postprocessing_window[2] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[3] = (GLfloat) S_window_w;
   G_vertex_buffer_postprocessing_window[4] = 0.0f;
-  G_vertex_buffer_postprocessing_window[5] = 0.5f;
+  G_vertex_buffer_postprocessing_window[5] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[6] = 0.0f;
   G_vertex_buffer_postprocessing_window[7] = (GLfloat) S_window_h;
-  G_vertex_buffer_postprocessing_window[8] = 0.5f;
+  G_vertex_buffer_postprocessing_window[8] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[9] = (GLfloat) S_window_w;
   G_vertex_buffer_postprocessing_window[10] = (GLfloat) S_window_h;
-  G_vertex_buffer_postprocessing_window[11] = 0.5f;
+  G_vertex_buffer_postprocessing_window[11] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_window);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -1210,19 +956,19 @@ short int graphics_setup_viewport_fullscreen()
   /* set up postprocessing window vertex buffer object */
   G_vertex_buffer_postprocessing_window[0]   = (GLfloat) (S_desktop_w - S_window_w) / 2.0f;
   G_vertex_buffer_postprocessing_window[1]   = (GLfloat) (S_desktop_h - S_window_h) / 2.0f;
-  G_vertex_buffer_postprocessing_window[2]   = 0.5f;
+  G_vertex_buffer_postprocessing_window[2]   = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[3]   = (GLfloat) (S_desktop_w + S_window_w) / 2.0f;
   G_vertex_buffer_postprocessing_window[4]   = (GLfloat) (S_desktop_h - S_window_h) / 2.0f;
-  G_vertex_buffer_postprocessing_window[5]   = 0.5f;
+  G_vertex_buffer_postprocessing_window[5]   = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[6]   = (GLfloat) (S_desktop_w - S_window_w) / 2.0f;
   G_vertex_buffer_postprocessing_window[7]   = (GLfloat) (S_desktop_h + S_window_h) / 2.0f;
-  G_vertex_buffer_postprocessing_window[8]   = 0.5f;
+  G_vertex_buffer_postprocessing_window[8]   = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_window[9]   = (GLfloat) (S_desktop_w + S_window_w) / 2.0f;
   G_vertex_buffer_postprocessing_window[10]  = (GLfloat) (S_desktop_h + S_window_h) / 2.0f;
-  G_vertex_buffer_postprocessing_window[11]  = 0.5f;
+  G_vertex_buffer_postprocessing_window[11]  = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_window);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -1243,19 +989,19 @@ short int graphics_setup_resized_buffers()
   /* set up postprocessing nearest resize vertex & texture coordinate buffers */
   G_vertex_buffer_postprocessing_nearest_resize[0] = 0.0f;
   G_vertex_buffer_postprocessing_nearest_resize[1] = 0.0f;
-  G_vertex_buffer_postprocessing_nearest_resize[2] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[2] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_nearest_resize[3] = (GLfloat) S_nearest_w;
   G_vertex_buffer_postprocessing_nearest_resize[4] = 0.0f;
-  G_vertex_buffer_postprocessing_nearest_resize[5] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[5] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_nearest_resize[6] = 0.0f;
   G_vertex_buffer_postprocessing_nearest_resize[7] = (GLfloat) S_nearest_h;
-  G_vertex_buffer_postprocessing_nearest_resize[8] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[8] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_nearest_resize[9] = (GLfloat) S_nearest_w;
   G_vertex_buffer_postprocessing_nearest_resize[10] = (GLfloat) S_nearest_h;
-  G_vertex_buffer_postprocessing_nearest_resize[11] = 0.5f;
+  G_vertex_buffer_postprocessing_nearest_resize[11] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_nearest_resize);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -1280,19 +1026,19 @@ short int graphics_setup_resized_buffers()
   /* set up postprocessing cubic resize vertex & texture coordinate buffers */
   G_vertex_buffer_postprocessing_cubic_resize[0] = 0.0f;
   G_vertex_buffer_postprocessing_cubic_resize[1] = 0.0f;
-  G_vertex_buffer_postprocessing_cubic_resize[2] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[2] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_cubic_resize[3] = (GLfloat) S_window_w;
   G_vertex_buffer_postprocessing_cubic_resize[4] = 0.0f;
-  G_vertex_buffer_postprocessing_cubic_resize[5] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[5] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_cubic_resize[6] = 0.0f;
-  G_vertex_buffer_postprocessing_cubic_resize[7] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
-  G_vertex_buffer_postprocessing_cubic_resize[8] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[7] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_cubic_resize[8] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   G_vertex_buffer_postprocessing_cubic_resize[9] = (GLfloat) S_window_w;
-  G_vertex_buffer_postprocessing_cubic_resize[10] = (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT;
-  G_vertex_buffer_postprocessing_cubic_resize[11] = 0.5f;
+  G_vertex_buffer_postprocessing_cubic_resize[10] = (GLfloat) GRAPHICS_OVERSCAN_HEIGHT;
+  G_vertex_buffer_postprocessing_cubic_resize[11] = GRAPHICS_Z_LEVEL_FULL_SCREEN_QUAD;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_vertex_buffer_id_postprocessing_cubic_resize);
   glBufferData( GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), 
@@ -1305,10 +1051,10 @@ short int graphics_setup_resized_buffers()
   G_texture_coord_buffer_postprocessing_cubic_resize[3] = 1.0f;
 
   G_texture_coord_buffer_postprocessing_cubic_resize[4] = 0.0f;
-  G_texture_coord_buffer_postprocessing_cubic_resize[5] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
+  G_texture_coord_buffer_postprocessing_cubic_resize[5] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
 
   G_texture_coord_buffer_postprocessing_cubic_resize[6] = (GLfloat) S_window_w / GRAPHICS_INTERMEDIATE_TEXTURE_WIDTH;
-  G_texture_coord_buffer_postprocessing_cubic_resize[7] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_OUTPUT_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
+  G_texture_coord_buffer_postprocessing_cubic_resize[7] = 1.0f - (GLfloat) GRAPHICS_OVERSCAN_HEIGHT / GRAPHICS_INTERMEDIATE_TEXTURE_HEIGHT;
 
   glBindBuffer(GL_ARRAY_BUFFER, G_texture_coord_buffer_id_postprocessing_cubic_resize);
   glBufferData( GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), 
