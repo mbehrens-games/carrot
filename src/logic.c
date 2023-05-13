@@ -13,6 +13,7 @@
 #include "grid.h"
 #include "lifetime.h"
 #include "state.h"
+#include "subpixel.h"
 #include "thing.h"
 #include "world.h"
 
@@ -681,8 +682,8 @@ short int logic_pickup_spawners_update()
           (b->num_things == 0)                          && 
           (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -694,8 +695,8 @@ short int logic_pickup_spawners_update()
                 (b->num_things == 0)                                && 
                 (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -715,8 +716,8 @@ short int logic_pickup_spawners_update()
                 (b->num_things == 0)                                  && 
                 (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -736,8 +737,8 @@ short int logic_pickup_spawners_update()
                 (b->num_things == 0)                                && 
                 (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -804,8 +805,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         world_spawn_thing(THING_TYPE_BUBBLE_VERTICAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, 0, -THING_BUBBLE_VEL, 0);
@@ -827,8 +828,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         world_spawn_thing(THING_TYPE_BUBBLE_HORIZONTAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, THING_BUBBLE_VEL, 0, 0);
@@ -850,8 +851,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         world_spawn_thing(THING_TYPE_BUBBLE_VERTICAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, 0, THING_BUBBLE_VEL, 0);
@@ -873,8 +874,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
         world_spawn_thing(THING_TYPE_BUBBLE_HORIZONTAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, -THING_BUBBLE_VEL, 0, 0);
@@ -1203,8 +1204,8 @@ short int logic_collect_pickups()
           G_bunny_action = BUNNY_ACTION_JUMPING_DOUBLE;
 
         /* determine grid box that contains this pickup */
-        box_x = (t1->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) % GRID_WIDTH;
-        box_y = (t1->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) % GRID_HEIGHT;
+        box_x = (t1->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_WIDTH;
+        box_y = (t1->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_HEIGHT;
 
         b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
 
@@ -1269,8 +1270,8 @@ short int logic_collect_pickups()
           G_marble_gravity = MARBLE_GRAVITY_RIGHT;
 
         /* determine grid box that contains this pickup */
-        box_x = (t1->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) % GRID_WIDTH;
-        box_y = (t1->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) % GRID_HEIGHT;
+        box_x = (t1->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_WIDTH;
+        box_y = (t1->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_HEIGHT;
 
         b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
 
@@ -1430,8 +1431,8 @@ short int logic_collect_pickups()
       }
 
       /* determine grid box that contains this pickup */
-      box_x = (t1->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) % GRID_WIDTH;
-      box_y = (t1->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) % GRID_HEIGHT;
+      box_x = (t1->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_WIDTH;
+      box_y = (t1->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_HEIGHT;
 
       b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
 
@@ -1656,16 +1657,16 @@ short int logic_move_critters()
           /* we get the position just beneath the critter               */
           if (t->vel_x >= 0)
           {
-            box_x[0] = (t->pos_x - t->hx) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-            box_x[1] = (t->pos_x + t->hx - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+            box_x[0] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+            box_x[1] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
           }
           else
           {
-            box_x[0] = (t->pos_x + t->hx - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-            box_x[1] = (t->pos_x - t->hx) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+            box_x[0] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+            box_x[1] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
           }
 
-          box_y = (t->pos_y + t->hy) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+          box_y = (t->pos_y + t->hy) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
           /* wraparound box indices */
           box_x[0] = (box_x[0] + GRID_WIDTH) % GRID_WIDTH;
@@ -2734,8 +2735,8 @@ short int logic_platforms_etc_check_for_tracks_and_stops()
       t->state = STATE_NONE;
 
     /* determine grid box that contains this platform's center */
-    box_x = t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-    box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+    box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+    box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
     /* wraparound box indices */
     box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
@@ -2836,8 +2837,8 @@ short int logic_platforms_etc_check_for_tracks_and_stops()
       rider_indices[2] = -1;
 
     /* compute box center position (in subpixels) */
-    cx = ((box_x * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-    cy = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+    cx = ((box_x * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+    cy = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
     /* compute distance from center of grid box */
     amount_x = cx - t->pos_x;
@@ -3081,8 +3082,8 @@ short int logic_arrows_activate()
       t->state = STATE_NONE;
 
     /* determine grid box that contains this thrown thing's center */
-    box_x = t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-    box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+    box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+    box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
     /* wraparound box indices */
     box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
@@ -3206,8 +3207,8 @@ short int logic_arrows_activate()
     }
 
     /* compute box center position (in subpixels) */
-    cx = ((box_x * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
-    cy = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+    cx = ((box_x * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+    cy = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
     /* compute distance from center of grid box */
     amount_x = cx - t->pos_x;
@@ -3436,8 +3437,8 @@ short int logic_land_thrown_things()
         }
 
         /* compute grid box that contains this marble's center */
-        box_x = t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-        box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+        box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
         /* wraparound box indices */
         box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
@@ -3572,9 +3573,9 @@ short int logic_update_held_thing()
     t->pos_y = G_world_all_things[WORLD_BUNNY_INDEX].pos_y;
 
     if (G_bunny_gravity == BUNNY_GRAVITY_DOWN)
-      t->pos_y -= 16 * THING_NUM_SUBPIXELS;
+      t->pos_y -= 16 * SUBPIXEL_MANTISSA_FULL;
     else
-      t->pos_y += 16 * THING_NUM_SUBPIXELS;
+      t->pos_y += 16 * SUBPIXEL_MANTISSA_FULL;
   }
 
   /* if this is a held critter, set the sprite flip orientation */

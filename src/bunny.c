@@ -11,6 +11,7 @@
 #include "grid.h"
 #include "logic.h"
 #include "state.h"
+#include "subpixel.h"
 #include "thing.h"
 #include "world.h"
 
@@ -58,14 +59,14 @@ short int bunny_player_input_d_pad_left_on()
     else if (G_bunny_action == BUNNY_ACTION_ACCELERATING)
     {
       /* check for ice blocks beneath the bunny */
-      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
       {
         /* determine grid box (or boxes) beneath the bunny */
-        box_x[0] = (t->pos_x - t->hx) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-        box_x[1] = (t->pos_x + t->hx - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_x[0] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+        box_x[1] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
-        box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
         if (G_bunny_gravity == BUNNY_GRAVITY_UP)
           box_y -= 1;
@@ -214,14 +215,14 @@ short int bunny_player_input_d_pad_left_off()
     else if (G_bunny_action == BUNNY_ACTION_DECELERATING)
     {
       /* check for ice blocks beneath the bunny */
-      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
       {
         /* determine grid box (or boxes) beneath the bunny */
-        box_x[0] = (t->pos_x - t->hx) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-        box_x[1] = (t->pos_x + t->hx - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_x[0] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+        box_x[1] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
-        box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
         if (G_bunny_gravity == BUNNY_GRAVITY_UP)
           box_y -= 1;
@@ -324,14 +325,14 @@ short int bunny_player_input_d_pad_right_on()
     else if (G_bunny_action == BUNNY_ACTION_ACCELERATING)
     {
       /* check for ice blocks beneath the bunny */
-      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
       {
         /* determine grid box (or boxes) beneath the bunny */
-        box_x[0] = (t->pos_x - t->hx) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-        box_x[1] = (t->pos_x + t->hx - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_x[0] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+        box_x[1] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
-        box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
         if (G_bunny_gravity == BUNNY_GRAVITY_UP)
           box_y -= 1;
@@ -480,14 +481,14 @@ short int bunny_player_input_d_pad_right_off()
     else if (G_bunny_action == BUNNY_ACTION_DECELERATING)
     {
       /* check for ice blocks beneath the bunny */
-      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
       {
         /* determine grid box (or boxes) beneath the bunny */
-        box_x[0] = (t->pos_x - t->hx) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-        box_x[1] = (t->pos_x + t->hx - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_x[0] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+        box_x[1] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
-        box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
         if (G_bunny_gravity == BUNNY_GRAVITY_UP)
           box_y -= 1;
@@ -570,10 +571,10 @@ short int bunny_player_input_d_pad_up_on()
     return 0;
 
   /* determine grid boxes behind the bunny */
-  box_x = t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+  box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
-  box_y[0] = ((t->pos_y - t->hy) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE));
-  box_y[1] = ((t->pos_y + t->hy - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE));
+  box_y[0] = ((t->pos_y - t->hy) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE));
+  box_y[1] = ((t->pos_y + t->hy - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE));
 
   /* wraparound box indices */
   box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
@@ -621,7 +622,7 @@ short int bunny_player_input_d_pad_up_on()
       {
         /* if the bunny is not exactly centered on  */
         /* the ladder, try to move so that she is   */
-        move_amount = ((box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS) - t->pos_x;
+        move_amount = ((box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL) - t->pos_x;
 
         if (move_amount != 0)
         {
@@ -629,7 +630,7 @@ short int bunny_player_input_d_pad_up_on()
           grid_move_thing(WORLD_BUNNY_INDEX, GRID_MOVE_THING_MODE_HORIZONTAL, move_amount);
 
           /* if the bunny is now centered, grab the ladder */
-          if (t->pos_x == (box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS)
+          if (t->pos_x == (box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL)
           {
             G_bunny_action = BUNNY_ACTION_CLIMBING;
             G_bunny_facing = BUNNY_FACING_RIGHT;
@@ -699,10 +700,10 @@ short int bunny_player_input_d_pad_down_on()
     return 0;
 
   /* determine grid boxes behind the bunny */
-  box_x = t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+  box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
-  box_y[0] = ((t->pos_y - t->hy) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE));
-  box_y[1] = ((t->pos_y + t->hy - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE));
+  box_y[0] = ((t->pos_y - t->hy) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE));
+  box_y[1] = ((t->pos_y + t->hy - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE));
 
   /* wraparound box indices */
   box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
@@ -750,7 +751,7 @@ short int bunny_player_input_d_pad_down_on()
       {
         /* if the bunny is not exactly centered on  */
         /* the ladder, try to move so that she is   */
-        move_amount = ((box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS) - t->pos_x;
+        move_amount = ((box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL) - t->pos_x;
 
         if (move_amount != 0)
         {
@@ -758,7 +759,7 @@ short int bunny_player_input_d_pad_down_on()
           grid_move_thing(WORLD_BUNNY_INDEX, GRID_MOVE_THING_MODE_HORIZONTAL, move_amount);
 
           /* if the bunny is now centered, grab the ladder */
-          if (t->pos_x == (box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS)
+          if (t->pos_x == (box_x * GRID_BOX_SIZE + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL)
           {
             G_bunny_action = BUNNY_ACTION_CLIMBING;
             G_bunny_facing = BUNNY_FACING_RIGHT;
@@ -946,21 +947,21 @@ short int bunny_player_input_d_pad_up_on_and_button_b_pressed()
     /* compute new position and velocity */
     if (G_bunny_facing == BUNNY_FACING_RIGHT)
     {
-      pos_x = t->pos_x + (16 * THING_NUM_SUBPIXELS);
+      pos_x = t->pos_x + (16 * SUBPIXEL_MANTISSA_FULL);
 
       vel_x = THING_THROWN_DIAGONAL_VEL;
       vel_y = -THING_THROWN_DIAGONAL_VEL;
     }
     else
     {
-      pos_x = t->pos_x - (16 * THING_NUM_SUBPIXELS);
+      pos_x = t->pos_x - (16 * SUBPIXEL_MANTISSA_FULL);
 
       vel_x = -THING_THROWN_DIAGONAL_VEL;
       vel_y = -THING_THROWN_DIAGONAL_VEL;
     }
 
     if (G_bunny_gravity == BUNNY_GRAVITY_DOWN)
-      pos_y = t->pos_y - (16 * THING_NUM_SUBPIXELS);
+      pos_y = t->pos_y - (16 * SUBPIXEL_MANTISSA_FULL);
     else
       pos_y = t->pos_y;
 
@@ -995,21 +996,21 @@ short int bunny_player_input_d_pad_down_on_and_button_b_pressed()
     /* compute new position and velocity */
     if (G_bunny_facing == BUNNY_FACING_RIGHT)
     {
-      pos_x = t->pos_x + (16 * THING_NUM_SUBPIXELS);
+      pos_x = t->pos_x + (16 * SUBPIXEL_MANTISSA_FULL);
 
       vel_x = THING_THROWN_DIAGONAL_VEL;
       vel_y = THING_THROWN_DIAGONAL_VEL;
     }
     else
     {
-      pos_x = t->pos_x - (16 * THING_NUM_SUBPIXELS);
+      pos_x = t->pos_x - (16 * SUBPIXEL_MANTISSA_FULL);
 
       vel_x = -THING_THROWN_DIAGONAL_VEL;
       vel_y = THING_THROWN_DIAGONAL_VEL;
     }
 
     if (G_bunny_gravity == BUNNY_GRAVITY_UP)
-      pos_y = t->pos_y + (16 * THING_NUM_SUBPIXELS);
+      pos_y = t->pos_y + (16 * SUBPIXEL_MANTISSA_FULL);
     else
       pos_y = t->pos_y;
 
@@ -1051,16 +1052,16 @@ short int bunny_player_input_d_pad_left_on_and_button_b_pressed()
         (G_bunny_action == BUNNY_ACTION_WALKING)      || 
         (G_bunny_action == BUNNY_ACTION_DECELERATING))
     {
-      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
       {
-        if ((t->pos_x - t->hx) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)
+        if ((t->pos_x - t->hx) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)
         {
           /* determine grid boxes left of the bunny */
-          box_x[0] = (t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) - 1;
-          box_x[1] = (t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) - 2;
+          box_x[0] = (t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) - 1;
+          box_x[1] = (t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) - 2;
 
-          box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+          box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
           /* wraparound box indices */
           box_x[0] = (box_x[0] + GRID_WIDTH) % GRID_WIDTH;
@@ -1110,7 +1111,7 @@ short int bunny_player_input_d_pad_left_on_and_button_b_pressed()
   else
   {
     /* compute new position */
-    pos_x = t->pos_x - (16 * THING_NUM_SUBPIXELS);
+    pos_x = t->pos_x - (16 * SUBPIXEL_MANTISSA_FULL);
     pos_y = t->pos_y;
 
     /* compute new velocity */
@@ -1163,16 +1164,16 @@ short int bunny_player_input_d_pad_right_on_and_button_b_pressed()
         (G_bunny_action == BUNNY_ACTION_WALKING)      || 
         (G_bunny_action == BUNNY_ACTION_DECELERATING))
     {
-      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
       {
-        if ((t->pos_x + t->hx) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)
+        if ((t->pos_x + t->hx) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)
         {
           /* determine grid boxes left of the bunny */
-          box_x[0] = (t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) + 1;
-          box_x[1] = (t->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) + 2;
+          box_x[0] = (t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) + 1;
+          box_x[1] = (t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) + 2;
 
-          box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+          box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
           /* wraparound box indices */
           box_x[0] = (box_x[0] + GRID_WIDTH) % GRID_WIDTH;
@@ -1222,7 +1223,7 @@ short int bunny_player_input_d_pad_right_on_and_button_b_pressed()
   else
   {
     /* compute new position */
-    pos_x = t->pos_x + (16 * THING_NUM_SUBPIXELS);
+    pos_x = t->pos_x + (16 * SUBPIXEL_MANTISSA_FULL);
     pos_y = t->pos_y;
 
     /* compute new velocity */
@@ -1268,12 +1269,12 @@ short int bunny_player_input_d_pad_neutral_and_button_b_pressed()
     /* compute new position */
     if (G_bunny_facing == BUNNY_FACING_RIGHT)
     {
-      pos_x = t->pos_x + (16 * THING_NUM_SUBPIXELS);
+      pos_x = t->pos_x + (16 * SUBPIXEL_MANTISSA_FULL);
       pos_y = t->pos_y;
     }
     else
     {
-      pos_x = t->pos_x - (16 * THING_NUM_SUBPIXELS);
+      pos_x = t->pos_x - (16 * SUBPIXEL_MANTISSA_FULL);
       pos_y = t->pos_y;
     }
 
@@ -1382,11 +1383,11 @@ short int bunny_player_input_always_when_button_b_pressed()
         (G_bunny_action == BUNNY_ACTION_DECELERATING))
     {
       /* check for a marble in the grid box beneath this one */
-      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t1->pos_y + t1->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t1->pos_y - t1->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+      if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t1->pos_y + t1->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+          ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t1->pos_y - t1->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
       {
-        box_x = t1->pos_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-        box_y = t1->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+        box_x = t1->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+        box_y = t1->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
         if (G_bunny_gravity == BUNNY_GRAVITY_UP)
           box_y -= 1;
@@ -1414,7 +1415,7 @@ short int bunny_player_input_always_when_button_b_pressed()
           /* note that it immediately snaps to  */
           /* being below (or above) the bunny   */
           pos_x = t1->pos_x;
-          pos_y = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * THING_NUM_SUBPIXELS;
+          pos_y = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
           vel_x = 0;
 
@@ -1518,9 +1519,9 @@ short int bunny_player_input_always_when_button_b_pressed()
         pos_x = t1->pos_x;
 
         if (G_bunny_gravity == BUNNY_GRAVITY_DOWN)
-          pos_y = t1->pos_y + (16 * THING_NUM_SUBPIXELS);
+          pos_y = t1->pos_y + (16 * SUBPIXEL_MANTISSA_FULL);
         else
-          pos_y = t1->pos_y - (16 * THING_NUM_SUBPIXELS);
+          pos_y = t1->pos_y - (16 * SUBPIXEL_MANTISSA_FULL);
 
         vel_x = 0;
 
@@ -1584,14 +1585,14 @@ short int bunny_player_input_button_a_pressed()
     double_jump_flag = 0;
 
     /* check for diamond or heart blocks beneath the bunny */
-    if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)) || 
-        ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (THING_NUM_SUBPIXELS * GRID_BOX_SIZE) == 0)))
+    if (((G_bunny_gravity == BUNNY_GRAVITY_DOWN)  && ((t->pos_y + t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)) || 
+        ((G_bunny_gravity == BUNNY_GRAVITY_UP)    && ((t->pos_y - t->hy) % (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE) == 0)))
     {
       /* determine grid box (or boxes) beneath the bunny */
-      box_x[0] = (t->pos_x - t->hx) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
-      box_x[1] = (t->pos_x + t->hx - 1) / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+      box_x[0] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+      box_x[1] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
-      box_y = t->pos_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);
+      box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
 
       if (G_bunny_gravity == BUNNY_GRAVITY_UP)
         box_y -= 1;

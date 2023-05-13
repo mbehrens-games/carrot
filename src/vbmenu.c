@@ -941,7 +941,7 @@ short int vb_menu_load_title_overlay()
   vb_menu_load_text(-13, 11, VB_MENU_ALIGN_LEFT, 0, 6, 16, "Quit");
 
   /* signature text */
-  vb_menu_load_text(0, 22, VB_MENU_ALIGN_CENTER, 0, 6, 32, "2022 Michael Behrens v1.0x");
+  vb_menu_load_text(0, 22, VB_MENU_ALIGN_CENTER, 0, 6, 32, "2022 Michael Behrens v1.0e");
 
   /* cursor */
   vb_menu_load_cursor(-15, -5 + (4 * G_screen_choice), 0, 0);

@@ -185,7 +185,6 @@ extern GLfloat          G_texture_coord_buffer_postprocessing_cubic_resize[8];
 
 extern unsigned short   G_index_buffer_postprocessing_all[6];
 
-extern GLfloat          G_mvp_matrix_sky[16];
 extern GLfloat          G_mvp_matrix_tiles[16];
 extern GLfloat          G_mvp_matrix_sprites[16];
 
@@ -197,7 +196,6 @@ extern GLfloat          G_mvp_matrix_window[16];
 short int graphics_create_opengl_objects();
 short int graphics_destroy_opengl_objects();
 
-short int graphics_setup_sky_mvp_matrix(int t_x, int t_y);
 short int graphics_setup_tiles_mvp_matrix(int t_x, int t_y);
 short int graphics_setup_sprites_mvp_matrix(int t_x, int t_y);
 

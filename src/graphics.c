@@ -95,7 +95,6 @@ GLfloat           G_texture_coord_buffer_postprocessing_cubic_resize[8];
 
 unsigned short    G_index_buffer_postprocessing_all[6];
 
-GLfloat           G_mvp_matrix_sky[16];
 GLfloat           G_mvp_matrix_tiles[16];
 GLfloat           G_mvp_matrix_sprites[16];
 
@@ -184,27 +183,6 @@ short int graphics_create_opengl_objects()
     fprintf(stdout, "Error: Framebuffer Object 1 is not complete!\n");
     return 1;
   }
-
-  /* orthographic projection matrix (sky) */
-  G_mvp_matrix_sky[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
-  G_mvp_matrix_sky[1]  = 0.0f;
-  G_mvp_matrix_sky[2]  = 0.0f;
-  G_mvp_matrix_sky[3]  = 0.0f;
-
-  G_mvp_matrix_sky[4]  = 0.0f;
-  G_mvp_matrix_sky[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
-  G_mvp_matrix_sky[6]  = 0.0f;
-  G_mvp_matrix_sky[7]  = 0.0f;
-
-  G_mvp_matrix_sky[8]  = 0.0f;
-  G_mvp_matrix_sky[9]  = 0.0f;
-  G_mvp_matrix_sky[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
-  G_mvp_matrix_sky[11] = 0.0f;
-
-  G_mvp_matrix_sky[12] = -1.0f;
-  G_mvp_matrix_sky[13] = 1.0f;
-  G_mvp_matrix_sky[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
-  G_mvp_matrix_sky[15] = 1.0f;
 
   /* orthographic projection matrix (tiles) */
   G_mvp_matrix_tiles[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
@@ -678,35 +656,6 @@ short int graphics_destroy_opengl_objects()
     free(G_index_buffer_sprites);
     G_index_buffer_sprites = NULL;
   }
-
-  return 0;
-}
-
-/*******************************************************************************
-** graphics_setup_sky_mvp_matrix()
-*******************************************************************************/
-short int graphics_setup_sky_mvp_matrix(int t_x, int t_y)
-{
-  /* orthographic projection matrix (sky) */
-  G_mvp_matrix_sky[0]  = 2.0f / GRAPHICS_OVERSCAN_WIDTH;
-  G_mvp_matrix_sky[1]  = 0.0f;
-  G_mvp_matrix_sky[2]  = 0.0f;
-  G_mvp_matrix_sky[3]  = 0.0f;
-
-  G_mvp_matrix_sky[4]  = 0.0f;
-  G_mvp_matrix_sky[5]  = -2.0f / GRAPHICS_OVERSCAN_HEIGHT;
-  G_mvp_matrix_sky[6]  = 0.0f;
-  G_mvp_matrix_sky[7]  = 0.0f;
-
-  G_mvp_matrix_sky[8]  = 0.0f;
-  G_mvp_matrix_sky[9]  = 0.0f;
-  G_mvp_matrix_sky[10] = 1.6f; /* 2.0f / (1.375f - 0.125f); */
-  G_mvp_matrix_sky[11] = 0.0f;
-
-  G_mvp_matrix_sky[12] = ((2.0f * t_x) / GRAPHICS_OVERSCAN_WIDTH) - 1.0f;
-  G_mvp_matrix_sky[13] = ((-2.0f * t_y) / GRAPHICS_OVERSCAN_HEIGHT) + 1.0f;
-  G_mvp_matrix_sky[14] = -1.2f; /* -((1.375f + 0.125f) / (1.375f - 0.125f)) */
-  G_mvp_matrix_sky[15] = 1.0f;
 
   return 0;
 }

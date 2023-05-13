@@ -14,7 +14,7 @@ extern GLuint G_texture_id_rom_data;
 extern GLfloat G_texture_coord_table[65];
 
 /* function declarations */
-short int texture_generate_coord_table();
+short int texture_generate_coord_tables();
 
 short int texture_init();
 short int texture_deinit();

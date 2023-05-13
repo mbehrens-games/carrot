@@ -14,6 +14,7 @@
 #include "grid.h"
 #include "palette.h"
 #include "state.h"
+#include "subpixel.h"
 #include "texture.h"
 #include "thing.h"
 #include "vbsprite.h"
@@ -1038,8 +1039,8 @@ short int vb_sprite_load_grid_objects_and_things()
       continue;
 
     /* determine position */
-    pos_x = (t->pos_x + THING_NUM_SUBPIXELS_HALF) / THING_NUM_SUBPIXELS;
-    pos_y = (t->pos_y + THING_NUM_SUBPIXELS_HALF) / THING_NUM_SUBPIXELS;
+    pos_x = (t->pos_x + SUBPIXEL_MANTISSA_HALF) / SUBPIXEL_MANTISSA_FULL;
+    pos_y = (t->pos_y + SUBPIXEL_MANTISSA_HALF) / SUBPIXEL_MANTISSA_FULL;
 
     /* determine adjusted timer count */
     adjusted_timer_count = (G_timer_count + t->timer_offset) % 240;

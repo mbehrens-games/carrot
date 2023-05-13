@@ -292,7 +292,7 @@
   glUseProgram(G_program_id_OV_A);                                             \
                                                                                \
   glUniformMatrix4fv( G_uniform_OV_A_mvp_matrix_id, 1,                         \
-                      GL_FALSE, G_mvp_matrix_sky);                             \
+                      GL_FALSE, G_mvp_matrix_overscan);                        \
                                                                                \
   glActiveTexture(GL_TEXTURE0);                                                \
   glBindTexture(GL_TEXTURE_2D, G_texture_id_rom_data);                         \
@@ -306,7 +306,6 @@
                                                                                \
   glUniform1i(G_uniform_OV_B_hori_shift_id, G_parallax_hori_shift);            \
   glUniform1i(G_uniform_OV_B_vert_shift_id, G_parallax_vert_shift);            \
-  glUniform1f(G_uniform_OV_B_vert_weight_id, G_parallax_vert_weight);          \
                                                                                \
   glActiveTexture(GL_TEXTURE0);                                                \
   glBindTexture(GL_TEXTURE_2D, G_texture_id_intermediate_##num);               \
@@ -443,12 +442,11 @@ short int render_reset_vbos()
 short int render_scene_all()
 {
   /* setup matrices */
-  graphics_setup_sky_mvp_matrix(0, 0);
   graphics_setup_tiles_mvp_matrix(0, 0);
   graphics_setup_sprites_mvp_matrix(0, 0);
 
   /* update parallax scrolling */
-  parallax_update_shift(0, 0);
+  parallax_increment_shift(0, 0);
 
   /* pass 1 - backdrop tile rendering */
   RENDER_TILES_OPENGL_SETTINGS()

@@ -148,8 +148,9 @@ int main(int argc, char *argv[])
   controls_plug_in_all_gamepads();
 
   /* generate texture coordinate tables */
-  texture_generate_coord_table();
+  texture_generate_coord_tables();
   palette_generate_coord_tables();
+  parallax_generate_coord_tables();
 
   /* generate palette texture */
   palette_create_opengl_texture();

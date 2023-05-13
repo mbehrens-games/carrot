@@ -11,6 +11,7 @@
 #include "grid.h"
 #include "level.h"
 #include "state.h"
+#include "subpixel.h"
 #include "thing.h"
 #include "world.h"
 
@@ -296,46 +297,46 @@ short int world_spawn_thing(int type, int color, int state, int orient,
   /* set hitbox size based on type */
   if (type == THING_TYPE_BUNNY)
   {
-    t->hx = 5 * THING_NUM_SUBPIXELS;
-    t->hy = 8 * THING_NUM_SUBPIXELS;
+    t->hx = 5 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 8 * SUBPIXEL_MANTISSA_FULL;
   }
   else if (type == THING_TYPE_CARROT)
   {
-    t->hx = 4 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 4 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else if (type == THING_TYPE_BOOK)
   {
-    t->hx = 6 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 6 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else if (type == THING_TYPE_MUSIC_NOTES)
   {
-    t->hx = 8 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 8 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else if ( (type == THING_TYPE_MAGNET_DOWN)  || 
             (type == THING_TYPE_MAGNET_UP)    || 
             (type == THING_TYPE_MAGNET_RIGHT) || 
             (type == THING_TYPE_MAGNET_LEFT))
   {
-    t->hx = 7 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 7 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else if (type == THING_TYPE_GEM)
   {
-    t->hx = 8 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 8 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else if (type == THING_TYPE_KEY)
   {
-    t->hx = 4 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 4 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else if (type == THING_TYPE_MUSHROOM)
   {
-    t->hx = 6 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 6 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else if ( (type == THING_TYPE_CRITTER_WALKER_1)         || 
             (type == THING_TYPE_CRITTER_WALKER_2)         || 
@@ -346,8 +347,8 @@ short int world_spawn_thing(int type, int color, int state, int orient,
             (type == THING_TYPE_THROWN_CRITTER_FLYER_1)   || 
             (type == THING_TYPE_THROWN_CRITTER_FLYER_2))
   {
-    t->hx = 7 * THING_NUM_SUBPIXELS;
-    t->hy = 8 * THING_NUM_SUBPIXELS;
+    t->hx = 7 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 8 * SUBPIXEL_MANTISSA_FULL;
   }
   else if ( (type == THING_TYPE_BASS_KNOB)            || 
             (type == THING_TYPE_TREBLE_KNOB)          || 
@@ -363,25 +364,25 @@ short int world_spawn_thing(int type, int color, int state, int orient,
             (type == THING_TYPE_ANTI_BOLT_DOWN)       || 
             (type == THING_TYPE_PLATFORM))
   {
-    t->hx = 8 * THING_NUM_SUBPIXELS;
-    t->hy = 8 * THING_NUM_SUBPIXELS;
+    t->hx = 8 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 8 * SUBPIXEL_MANTISSA_FULL;
   }
   else if (type == THING_TYPE_THROWN_MARBLE)
   {
-    t->hx = 8 * THING_NUM_SUBPIXELS;
-    t->hy = 8 * THING_NUM_SUBPIXELS;
+    t->hx = 8 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 8 * SUBPIXEL_MANTISSA_FULL;
   }
   else if ( (type == THING_TYPE_BUBBLE_HORIZONTAL)  || 
             (type == THING_TYPE_BUBBLE_VERTICAL)    || 
             (type == THING_TYPE_BUBBLE_STRESSED))
   {
-    t->hx = 7 * THING_NUM_SUBPIXELS;
-    t->hy = 7 * THING_NUM_SUBPIXELS;
+    t->hx = 7 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 7 * SUBPIXEL_MANTISSA_FULL;
   }
   else
   {
-    t->hx = 8 * THING_NUM_SUBPIXELS;
-    t->hy = 8 * THING_NUM_SUBPIXELS;
+    t->hx = 8 * SUBPIXEL_MANTISSA_FULL;
+    t->hy = 8 * SUBPIXEL_MANTISSA_FULL;
   }
 
   t->flag = THING_COLLISION_FLAG_NONE;
@@ -508,8 +509,8 @@ short int world_load_things_from_tilemap()
       orient = THING_ORIENT_NORMAL;
 
       /* determine position */
-      pos_x = (LEVEL_ROOM_TILE_SIZE * m + LEVEL_ROOM_TILE_SIZE_HALF) * THING_NUM_SUBPIXELS;
-      pos_y = (LEVEL_ROOM_TILE_SIZE * n + LEVEL_ROOM_TILE_SIZE_HALF) * THING_NUM_SUBPIXELS;
+      pos_x = (LEVEL_ROOM_TILE_SIZE * m + LEVEL_ROOM_TILE_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+      pos_y = (LEVEL_ROOM_TILE_SIZE * n + LEVEL_ROOM_TILE_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
 
       /* initialize velocity */
       vel_x = 0;

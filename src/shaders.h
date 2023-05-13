@@ -43,7 +43,6 @@ extern GLuint G_uniform_OV_B_texture_sampler_id;
 extern GLuint G_uniform_OV_B_parallax_sampler_id;
 extern GLuint G_uniform_OV_B_hori_shift_id;
 extern GLuint G_uniform_OV_B_vert_shift_id;
-extern GLuint G_uniform_OV_B_vert_weight_id;
 
 extern GLuint G_uniform_OV_C_mvp_matrix_id;
 extern GLuint G_uniform_OV_C_texture_sampler_id;

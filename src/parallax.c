@@ -10,16 +10,25 @@
 #include <math.h>
 
 #include "parallax.h"
+#include "subpixel.h"
 
-GLuint  G_texture_id_parallax;
+#define PARALLAX_SCROLL_WIDTH   (320 * PARALLAX_NUM_LAYERS * SUBPIXEL_MANTISSA_FULL)
+#define PARALLAX_SCROLL_HEIGHT  (224 * SUBPIXEL_MANTISSA_FULL)
 
-GLint   G_parallax_hori_shift;
-GLint   G_parallax_vert_shift;
-GLfloat G_parallax_vert_weight;
+GLuint G_texture_id_parallax;
 
-GLfloat G_parallax_coord_table[16];
+GLint G_parallax_hori_shift;
+GLint G_parallax_vert_shift;
+
+GLfloat G_parallax_coord_table[PARALLAX_NUM_LAYERS + 1];
 
 static GLfloat* S_parallax_data;
+
+static int S_parallax_hori_scrolling;
+static int S_parallax_vert_scrolling;
+
+static int S_parallax_hori_subpixels;
+static int S_parallax_vert_subpixels;
 
 /*******************************************************************************
 ** parallax_generate_coord_tables()
@@ -29,14 +38,16 @@ short int parallax_generate_coord_tables()
   int k;
 
   /* parallax coordinate table */
-  /* these are scaling factors on the reversal of the shift */
-  /* that was applied to the sky layer by the mvp matrix.   */
-  /* a scaling factor of 0.0 would mean that the sky layer  */
-  /* scrolling matches the foreground exactly.              */
-  /* a scaling factor of 1.0 would mean that the sky layer  */
-  /* remains stationary as the foreground scrolls.          */
-  for (k = 0; k < 16; k++)
-    G_parallax_coord_table[k] = 1.0f - (k / 16.0f);
+  /* these are scaling factors on the horizontal  */
+  /* shift applied to the sky layer. a scaling    */
+  /* factor of 1.0 means that the scanline        */
+  /* matches the foreground scrolling exactly.    */
+  G_parallax_coord_table[0] = 0.0f;
+
+  for (k = 1; k < PARALLAX_NUM_LAYERS; k++)
+    G_parallax_coord_table[k] = ((float) k) / PARALLAX_NUM_LAYERS;
+
+  G_parallax_coord_table[PARALLAX_NUM_LAYERS] = 1.0f;
 
   return 0;
 }
@@ -62,7 +73,12 @@ short int parallax_init()
   /* initialize variables (for the sky_parallax shader) */
   G_parallax_hori_shift = 0;
   G_parallax_vert_shift = 0;
-  G_parallax_vert_weight = 1.0f;
+
+  S_parallax_hori_scrolling = PARALLAX_SCROLLING_NONE;
+  S_parallax_vert_scrolling = PARALLAX_SCROLLING_NONE;
+
+  S_parallax_hori_subpixels = 0;
+  S_parallax_vert_subpixels = 0;
 
   return 0;
 }
@@ -120,19 +136,91 @@ short int parallax_create_opengl_texture()
 }
 
 /*******************************************************************************
-** parallax_update_shift()
+** parallax_set_hori_scrolling()
 *******************************************************************************/
-short int parallax_update_shift(int x_shift, int y_shift)
+short int parallax_set_hori_scrolling(int scrolling)
 {
-  if (x_shift < 0)
-    G_parallax_hori_shift = x_shift + 320;
-  else
-    G_parallax_hori_shift = x_shift;
+  int k;
 
-  if (y_shift < 0)
-    G_parallax_vert_shift = y_shift + 224;
+  /* horizontal scrolling */
+  if ((scrolling == PARALLAX_SCROLLING_NONE) || 
+      (scrolling == PARALLAX_SCROLLING_HALF) || 
+      (scrolling == PARALLAX_SCROLLING_FULL))
+  {
+    S_parallax_hori_scrolling = scrolling;
+  }
   else
-    G_parallax_vert_shift = y_shift;
+    S_parallax_hori_scrolling = PARALLAX_SCROLLING_NONE;
+
+  /* update parallax texture */
+  for (k = 0; k < PARALLAX_SIZE; k++)
+  {
+    if (S_parallax_hori_scrolling == PARALLAX_SCROLLING_NONE)
+      S_parallax_data[1 * k + 0] = G_parallax_coord_table[0];
+    else if (S_parallax_hori_scrolling == PARALLAX_SCROLLING_HALF)
+      S_parallax_data[1 * k + 0] = G_parallax_coord_table[PARALLAX_NUM_LAYERS / 2];
+    else if (S_parallax_hori_scrolling == PARALLAX_SCROLLING_FULL)
+      S_parallax_data[1 * k + 0] = G_parallax_coord_table[PARALLAX_NUM_LAYERS];
+    else
+      S_parallax_data[1 * k + 0] = G_parallax_coord_table[0];
+  }
+
+  glBindTexture(GL_TEXTURE_1D, G_texture_id_parallax);
+  glTexSubImage1D(GL_TEXTURE_1D, 0, 0, PARALLAX_SIZE, 
+                  GL_RED, GL_FLOAT, S_parallax_data);
+
+  return 0;
+}
+
+/*******************************************************************************
+** parallax_set_vert_scrolling()
+*******************************************************************************/
+short int parallax_set_vert_scrolling(int scrolling)
+{
+  /* vertical scrolling */
+  if ((scrolling == PARALLAX_SCROLLING_NONE) || 
+      (scrolling == PARALLAX_SCROLLING_HALF) || 
+      (scrolling == PARALLAX_SCROLLING_FULL))
+  {
+    S_parallax_vert_scrolling = scrolling;
+  }
+  else
+    S_parallax_vert_scrolling = PARALLAX_SCROLLING_NONE;
+
+  return 0;
+}
+
+/*******************************************************************************
+** parallax_increment_shift()
+*******************************************************************************/
+short int parallax_increment_shift(int dx, int dy)
+{
+  /* add increments to the current scroll position (in subpixels) */
+  S_parallax_hori_subpixels += dx;
+
+  if (S_parallax_vert_scrolling == PARALLAX_SCROLLING_NONE)
+    S_parallax_vert_subpixels += 0;
+  else if (S_parallax_vert_scrolling == PARALLAX_SCROLLING_HALF)
+    S_parallax_vert_subpixels += dy / 2;
+  else if (S_parallax_vert_scrolling == PARALLAX_SCROLLING_FULL)
+    S_parallax_vert_subpixels += dy;
+  else
+    S_parallax_vert_subpixels += 0;
+
+  /* wraparound */
+  if (S_parallax_hori_subpixels < 0)
+    S_parallax_hori_subpixels += PARALLAX_SCROLL_WIDTH;
+  else
+    S_parallax_hori_subpixels = S_parallax_hori_subpixels % PARALLAX_SCROLL_WIDTH;
+
+  if (S_parallax_vert_subpixels < 0)
+    S_parallax_vert_subpixels += PARALLAX_SCROLL_HEIGHT;
+  else
+    S_parallax_vert_subpixels = S_parallax_vert_subpixels % PARALLAX_SCROLL_HEIGHT;
+
+  /* determine scroll position (in pixels) */
+  G_parallax_hori_shift = (S_parallax_hori_subpixels + SUBPIXEL_MANTISSA_HALF) / SUBPIXEL_MANTISSA_FULL;
+  G_parallax_vert_shift = (S_parallax_vert_subpixels + SUBPIXEL_MANTISSA_HALF) / SUBPIXEL_MANTISSA_FULL;
 
   return 0;
 }

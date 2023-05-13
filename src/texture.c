@@ -16,9 +16,9 @@ GLuint G_texture_id_rom_data;
 GLfloat G_texture_coord_table[65];
 
 /*******************************************************************************
-** texture_generate_coord_table()
+** texture_generate_coord_tables()
 *******************************************************************************/
-short int texture_generate_coord_table()
+short int texture_generate_coord_tables()
 {
   int k;
 

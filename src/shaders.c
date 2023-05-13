@@ -32,7 +32,6 @@ GLuint G_uniform_OV_B_texture_sampler_id;
 GLuint G_uniform_OV_B_parallax_sampler_id;
 GLuint G_uniform_OV_B_hori_shift_id;
 GLuint G_uniform_OV_B_vert_shift_id;
-GLuint G_uniform_OV_B_vert_weight_id;
 
 GLuint G_uniform_OV_C_mvp_matrix_id;
 GLuint G_uniform_OV_C_texture_sampler_id;
@@ -488,7 +487,6 @@ short int shaders_create_programs()
   G_uniform_OV_B_parallax_sampler_id = glGetUniformLocation(G_program_id_OV_B, "parallax_sampler");
   G_uniform_OV_B_hori_shift_id = glGetUniformLocation(G_program_id_OV_B, "hori_shift");
   G_uniform_OV_B_vert_shift_id = glGetUniformLocation(G_program_id_OV_B, "vert_shift");
-  G_uniform_OV_B_vert_weight_id = glGetUniformLocation(G_program_id_OV_B, "vert_weight");
 
   G_uniform_OV_C_mvp_matrix_id = glGetUniformLocation(G_program_id_OV_C, "mvp_matrix");
   G_uniform_OV_C_texture_sampler_id = glGetUniformLocation(G_program_id_OV_C, "texture_sampler");

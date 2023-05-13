@@ -5,14 +5,6 @@
 #ifndef THING_H
 #define THING_H
 
-/* thing positions, velocities, and hitbox  */
-/* sizes are stored in terms of subpixels   */
-/* there are 16 subpixels per pixel         */
-/* (in other words, these values are fixed  */
-/* point with a 4 bit mantissa).            */
-#define THING_NUM_SUBPIXELS       16
-#define THING_NUM_SUBPIXELS_HALF  (THING_NUM_SUBPIXELS / 2)
-
 enum
 {
   THING_TYPE_NONE = 0,
@@ -83,6 +75,12 @@ enum
   THING_COLLISION_FLAG_BUBBLE_GOT_HIT
 };
 
+/* thing positions, velocities, and hitbox  */
+/* sizes are stored in terms of subpixels   */
+/* there are 16 subpixels per pixel         */
+/* (in other words, these values are fixed  */
+/* point with a 4 bit mantissa).            */
+
 #define THING_BUNNY_VEL_X_WALK        20
 #define THING_BUNNY_VEL_X_ACCEL       5
 #define THING_BUNNY_VEL_X_DECEL       10
@@ -96,9 +94,9 @@ enum
 #define THING_BUNNY_DECEL_TIME_ICE    28
 
 /* note that the bunny's jump velocity is chosen so   */
-/* that it will equal 256 exactly after 4 frames      */
+/* that it will equal 256 exactly after 4 frames.     */
 /* each frame, the velocity is decremented by the     */
-/* gravitational acceleration before movement         */
+/* gravitational acceleration before movement.        */
 /* so, we have 70 + 66 + 62 + 58 = 256                */
 /* this means the bunny can jump up 1 block into a    */
 /* 1 block tall narrow opening and line up perfectly  */

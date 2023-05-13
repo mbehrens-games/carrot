@@ -5,6 +5,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include "subpixel.h"
 #include "thing.h"
 
 /* things array start / end indices and counts */
@@ -69,8 +70,8 @@
 #define WORLD_WIDTH_IN_PIXELS  320
 #define WORLD_HEIGHT_IN_PIXELS 224
 
-#define WORLD_WIDTH_IN_SUBPIXELS  (WORLD_WIDTH_IN_PIXELS * THING_NUM_SUBPIXELS)
-#define WORLD_HEIGHT_IN_SUBPIXELS (WORLD_HEIGHT_IN_PIXELS * THING_NUM_SUBPIXELS)
+#define WORLD_WIDTH_IN_SUBPIXELS  (WORLD_WIDTH_IN_PIXELS * SUBPIXEL_MANTISSA_FULL)
+#define WORLD_HEIGHT_IN_SUBPIXELS (WORLD_HEIGHT_IN_PIXELS * SUBPIXEL_MANTISSA_FULL)
 
 extern thing  G_world_all_things[WORLD_MAX_THINGS];
 extern int    G_world_riders[WORLD_MAX_RIDERS];

@@ -28,10 +28,10 @@
   corner_high_y = (corner_high_y + WORLD_HEIGHT_IN_SUBPIXELS) % WORLD_HEIGHT_IN_SUBPIXELS;    \
                                                                                               \
   /* determine boxes overlapped by this thing */                                              \
-  box_low_x   = corner_low_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);                         \
-  box_high_x  = corner_high_x / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);                        \
-  box_low_y   = corner_low_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);                         \
-  box_high_y  = corner_high_y / (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);                        \
+  box_low_x   = corner_low_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);                      \
+  box_high_x  = corner_high_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);                     \
+  box_low_y   = corner_low_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);                      \
+  box_high_y  = corner_high_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);                     \
                                                                                               \
   /* wraparound box indices (should be unnecessary) */                                        \
   box_low_x   = (box_low_x + GRID_WIDTH) % GRID_WIDTH;                                        \
@@ -77,15 +77,15 @@
   l[0] = t1->pos_x - t1->hx;                                                   \
   h[0] = t1->pos_x + t1->hx - 1;                                               \
                                                                                \
-  l[1] = m * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);                            \
-  h[1] = ((m + 1) * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) - 1;                \
+  l[1] = m * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);                         \
+  h[1] = ((m + 1) * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) - 1;             \
                                                                                \
   /* obtain y projections */                                                   \
   l[2] = t1->pos_y - t1->hy;                                                   \
   h[2] = t1->pos_y + t1->hy - 1;                                               \
                                                                                \
-  l[3] = n * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE);                            \
-  h[3] = ((n + 1) * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) - 1;                \
+  l[3] = n * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);                         \
+  h[3] = ((n + 1) * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) - 1;             \
                                                                                \
   /* apply shift */                                                            \
   l[1] += shift_x * WORLD_WIDTH_IN_SUBPIXELS;                                  \
@@ -780,9 +780,9 @@ short int grid_move_thing(int index, int mode, int amount)
           /* the right edge of a thing is t->pos_x + t->hx - 1  */
           /* the left edge of a thing is t->pos_x - t->hx       */
           if (amount > 0)
-            t1->pos_x = (m * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) - t1->hx;
+            t1->pos_x = (m * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) - t1->hx;
           else if (amount < 0)
-            t1->pos_x = ((m + 1) * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) + t1->hx;
+            t1->pos_x = ((m + 1) * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) + t1->hx;
 
           /* wraparound thing position */
           t1->pos_x = (t1->pos_x + WORLD_WIDTH_IN_SUBPIXELS) % WORLD_WIDTH_IN_SUBPIXELS;
@@ -792,9 +792,9 @@ short int grid_move_thing(int index, int mode, int amount)
           /* the bottom edge of a thing is t->pos_y + t->hy - 1 */
           /* the top edge of a thing is t->pos_y - t->hy        */
           if (amount > 0)
-            t1->pos_y = (n * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) - t1->hy;
+            t1->pos_y = (n * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) - t1->hy;
           else if (amount < 0)
-            t1->pos_y = ((n + 1) * (THING_NUM_SUBPIXELS * GRID_BOX_SIZE)) + t1->hy;
+            t1->pos_y = ((n + 1) * (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) + t1->hy;
 
           /* wraparound thing position */
           t1->pos_y = (t1->pos_y + WORLD_HEIGHT_IN_SUBPIXELS) % WORLD_HEIGHT_IN_SUBPIXELS;
