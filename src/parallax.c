@@ -9,11 +9,12 @@
 #include <string.h>
 #include <math.h>
 
+#include "graphics.h"
 #include "parallax.h"
 #include "subpixel.h"
 
-#define PARALLAX_SCROLL_WIDTH   (320 * PARALLAX_NUM_LAYERS * SUBPIXEL_MANTISSA_FULL)
-#define PARALLAX_SCROLL_HEIGHT  (224 * SUBPIXEL_MANTISSA_FULL)
+#define PARALLAX_SCROLL_WIDTH   (GRAPHICS_OVERSCAN_WIDTH * PARALLAX_NUM_LAYERS * SUBPIXEL_MANTISSA_FULL)
+#define PARALLAX_SCROLL_HEIGHT  (GRAPHICS_OVERSCAN_HEIGHT * SUBPIXEL_MANTISSA_FULL)
 
 GLuint G_texture_id_parallax;
 

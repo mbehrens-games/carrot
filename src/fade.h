@@ -14,17 +14,15 @@ enum
   FADE_STATE_FADEIN
 };
 
-extern int          G_fade_screen;
-extern int          G_fade_alternate;
-extern int          G_fade_page;
-extern int          G_fade_choice;
+extern int G_fade_screen;
+extern int G_fade_alternate;
+extern int G_fade_page;
+extern int G_fade_choice;
 
-extern unsigned int G_fade_timer;
-extern int          G_fade_state;
-extern int          G_fade_frame;
+extern int G_fade_state;
 
-extern GLfloat      G_fade_amount;
-extern GLfloat      G_fade_panels;
+extern GLfloat G_fade_amount;
+extern GLfloat G_fade_panels;
 
 /* function declarations */
 short int fade_init_variables();

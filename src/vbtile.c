@@ -464,9 +464,9 @@ short int vb_tile_load_menu_background()
   /* draw the background */
   tile_index = GRAPHICS_SKY_TILES_START_INDEX;
 
-  for (n = 0; n < (WORLD_HEIGHT_IN_PIXELS / 16); n++)
+  for (n = 0; n < (GRAPHICS_OVERSCAN_HEIGHT / 16); n++)
   {
-    for (m = 0; m < (WORLD_WIDTH_IN_PIXELS / 16); m++)
+    for (m = 0; m < (GRAPHICS_OVERSCAN_WIDTH / 16); m++)
     {
       /* determine position */
       pos_x = 16 * m + 8;

@@ -28,8 +28,8 @@ short int logic_marbles_apply_gravity()
   int outer_bound;
   int inner_bound;
 
-  /* the size of this array is the larger of GRID_WIDTH and GRID_HEIGHT */
-  grid_box* b[GRID_WIDTH];
+  /* the size of this array is the larger of GRID_WIDTH_IN_BOXES and GRID_HEIGHT_IN_BOXES */
+  grid_box* b[GRID_WIDTH_IN_BOXES];
 
   int start_index;
   int marble_color;
@@ -40,14 +40,14 @@ short int logic_marbles_apply_gravity()
   if ((G_marble_gravity == MARBLE_GRAVITY_DOWN) || 
       (G_marble_gravity == MARBLE_GRAVITY_UP))
   {
-    outer_bound = GRID_WIDTH;
-    inner_bound = GRID_HEIGHT;
+    outer_bound = GRID_WIDTH_IN_BOXES;
+    inner_bound = GRID_HEIGHT_IN_BOXES;
   }
   else if ( (G_marble_gravity == MARBLE_GRAVITY_RIGHT) || 
             (G_marble_gravity == MARBLE_GRAVITY_LEFT))
   {
-    outer_bound = GRID_HEIGHT;
-    inner_bound = GRID_WIDTH;
+    outer_bound = GRID_HEIGHT_IN_BOXES;
+    inner_bound = GRID_WIDTH_IN_BOXES;
   }
   else
     return 0;
@@ -60,22 +60,22 @@ short int logic_marbles_apply_gravity()
     if (G_marble_gravity == MARBLE_GRAVITY_DOWN)
     {
       for (n = 0; n < inner_bound; n++)
-        b[inner_bound - 1 - n] = &G_collision_grid[(n * GRID_WIDTH) + m];
+        b[inner_bound - 1 - n] = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
     }
     else if (G_marble_gravity == MARBLE_GRAVITY_UP)
     {
       for (n = 0; n < inner_bound; n++)
-        b[n] = &G_collision_grid[(n * GRID_WIDTH) + m];
+        b[n] = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
     }
     else if (G_marble_gravity == MARBLE_GRAVITY_RIGHT)
     {
       for (n = 0; n < inner_bound; n++)
-        b[inner_bound - 1 - n] = &G_collision_grid[(m * GRID_WIDTH) + n];
+        b[inner_bound - 1 - n] = &G_collision_grid[(m * GRID_WIDTH_IN_BOXES) + n];
     }
     else if (G_marble_gravity == MARBLE_GRAVITY_LEFT)
     {
       for (n = 0; n < inner_bound; n++)
-        b[n] = &G_collision_grid[(m * GRID_WIDTH) + n];
+        b[n] = &G_collision_grid[(m * GRID_WIDTH_IN_BOXES) + n];
     }
     else
       return 0;
@@ -162,11 +162,11 @@ short int logic_marbles_clear_completed_flashes_and_changes()
   unsigned int adjusted_timer_count;
 
   /* check for completed flashes and changes in the grid */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b->front_object == GRID_OBJECT_MARBLE)
       {
@@ -277,11 +277,11 @@ short int logic_marbles_check_for_matches()
   int indices[8][2];
 
   /* check for marble matches */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b[0] = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b[0] = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b[0]->front_object != GRID_OBJECT_MARBLE)
         continue;
@@ -293,42 +293,42 @@ short int logic_marbles_check_for_matches()
       /* note that index 2 is the center (m, n) */
       for (k = 0; k < 5; k++)
       {
-        adj_x[k] = (m - 2 + k + GRID_WIDTH) % GRID_WIDTH;
-        adj_y[k] = (n - 2 + k + GRID_HEIGHT) % GRID_HEIGHT;
+        adj_x[k] = (m - 2 + k + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
+        adj_y[k] = (n - 2 + k + GRID_HEIGHT_IN_BOXES) % GRID_HEIGHT_IN_BOXES;
       }
 
       /* compute indices */
       /* direction: right */
-      indices[0][0] = (adj_y[2] * GRID_WIDTH) + adj_x[3];
-      indices[0][1] = (adj_y[2] * GRID_WIDTH) + adj_x[4];
+      indices[0][0] = (adj_y[2] * GRID_WIDTH_IN_BOXES) + adj_x[3];
+      indices[0][1] = (adj_y[2] * GRID_WIDTH_IN_BOXES) + adj_x[4];
 
       /* direction: up right */
-      indices[1][0] = (adj_y[1] * GRID_WIDTH) + adj_x[3];
-      indices[1][1] = (adj_y[0] * GRID_WIDTH) + adj_x[4];
+      indices[1][0] = (adj_y[1] * GRID_WIDTH_IN_BOXES) + adj_x[3];
+      indices[1][1] = (adj_y[0] * GRID_WIDTH_IN_BOXES) + adj_x[4];
 
       /* direction: up */
-      indices[2][0] = (adj_y[1] * GRID_WIDTH) + adj_x[2];
-      indices[2][1] = (adj_y[0] * GRID_WIDTH) + adj_x[2];
+      indices[2][0] = (adj_y[1] * GRID_WIDTH_IN_BOXES) + adj_x[2];
+      indices[2][1] = (adj_y[0] * GRID_WIDTH_IN_BOXES) + adj_x[2];
 
       /* direction: up left */
-      indices[3][0] = (adj_y[1] * GRID_WIDTH) + adj_x[1];
-      indices[3][1] = (adj_y[0] * GRID_WIDTH) + adj_x[0];
+      indices[3][0] = (adj_y[1] * GRID_WIDTH_IN_BOXES) + adj_x[1];
+      indices[3][1] = (adj_y[0] * GRID_WIDTH_IN_BOXES) + adj_x[0];
 
       /* direction: left */
-      indices[4][0] = (adj_y[2] * GRID_WIDTH) + adj_x[1];
-      indices[4][1] = (adj_y[2] * GRID_WIDTH) + adj_x[0];
+      indices[4][0] = (adj_y[2] * GRID_WIDTH_IN_BOXES) + adj_x[1];
+      indices[4][1] = (adj_y[2] * GRID_WIDTH_IN_BOXES) + adj_x[0];
 
       /* direction: down left */
-      indices[5][0] = (adj_y[3] * GRID_WIDTH) + adj_x[1];
-      indices[5][1] = (adj_y[4] * GRID_WIDTH) + adj_x[0];
+      indices[5][0] = (adj_y[3] * GRID_WIDTH_IN_BOXES) + adj_x[1];
+      indices[5][1] = (adj_y[4] * GRID_WIDTH_IN_BOXES) + adj_x[0];
 
       /* direction: down */
-      indices[6][0] = (adj_y[3] * GRID_WIDTH) + adj_x[2];
-      indices[6][1] = (adj_y[4] * GRID_WIDTH) + adj_x[2];
+      indices[6][0] = (adj_y[3] * GRID_WIDTH_IN_BOXES) + adj_x[2];
+      indices[6][1] = (adj_y[4] * GRID_WIDTH_IN_BOXES) + adj_x[2];
 
       /* direction: down right */
-      indices[7][0] = (adj_y[3] * GRID_WIDTH) + adj_x[3];
-      indices[7][1] = (adj_y[4] * GRID_WIDTH) + adj_x[4];
+      indices[7][0] = (adj_y[3] * GRID_WIDTH_IN_BOXES) + adj_x[3];
+      indices[7][1] = (adj_y[4] * GRID_WIDTH_IN_BOXES) + adj_x[4];
 
       /* check for match in each direction */
       for (k = 0; k < 8; k++)
@@ -447,11 +447,11 @@ short int logic_marbles_activate_flashes_and_changes()
   thing* t;
 
   /* check for matched or ready marbles in the grid */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b->front_object == GRID_OBJECT_MARBLE)
       {
@@ -524,11 +524,11 @@ short int logic_complete_grid_objects_animations()
   unsigned int adjusted_timer_count;
 
   /* check for completed animations */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if ((b->back_object == GRID_OBJECT_DOOR_BLOCK) && 
           (b->back_state == STATE_DOOR_BLOCK_OPENING))
@@ -607,11 +607,11 @@ short int logic_doors_and_invisible_blocks_activate()
   grid_box* b;
 
   /* check for ready doors or invisible blocks */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if ((b->front_object == GRID_OBJECT_DOOR_BLOCK) && 
           (b->front_state == STATE_DOOR_BLOCK_READY_TO_OPEN))
@@ -664,11 +664,11 @@ short int logic_pickup_spawners_update()
   unsigned int pickup_timer_offset;
 
   /* update pickup spawners */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b->back_object == GRID_OBJECT_NONE)
         continue;
@@ -682,8 +682,8 @@ short int logic_pickup_spawners_update()
           (b->num_things == 0)                          && 
           (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * m + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * n + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -695,8 +695,8 @@ short int logic_pickup_spawners_update()
                 (b->num_things == 0)                                && 
                 (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * m + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * n + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -716,8 +716,8 @@ short int logic_pickup_spawners_update()
                 (b->num_things == 0)                                  && 
                 (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * m + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * n + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -737,8 +737,8 @@ short int logic_pickup_spawners_update()
                 (b->num_things == 0)                                && 
                 (adjusted_timer_count >= 210))
       {
-        pos_x = (GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * m + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * n + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         pickup_timer_offset = 240 - (((n + m) % ANIM_PICKUP_NUM_FRAMES) * ANIM_PICKUP_FRAME_LENGTH);
 
@@ -778,11 +778,11 @@ short int logic_bubble_pots_update()
   unsigned int adjusted_timer_count;
 
   /* update bubble pots */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b[0] = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b[0] = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b[0]->front_object == GRID_OBJECT_NONE)
         continue;
@@ -795,9 +795,9 @@ short int logic_bubble_pots_update()
           (adjusted_timer_count % 120 == 0))
       {
         spawn_box_x = m;
-        spawn_box_y = ((n - 1) + GRID_HEIGHT) % GRID_HEIGHT;
+        spawn_box_y = ((n - 1) + GRID_HEIGHT_IN_BOXES) % GRID_HEIGHT_IN_BOXES;
 
-        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH) + spawn_box_x];
+        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH_IN_BOXES) + spawn_box_x];
 
         if ((b[1]->front_object != GRID_OBJECT_NONE) || 
             (b[1]->num_things != 0))
@@ -805,8 +805,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_x + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_y + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         world_spawn_thing(THING_TYPE_BUBBLE_VERTICAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, 0, -THING_BUBBLE_VEL, 0);
@@ -817,10 +817,10 @@ short int logic_bubble_pots_update()
       else if ( (b[0]->front_object == GRID_OBJECT_BUBBLE_POT_RIGHT) && 
                 (adjusted_timer_count % 120 == 0))
       {
-        spawn_box_x = ((m + 1) + GRID_WIDTH) % GRID_WIDTH;
+        spawn_box_x = ((m + 1) + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
         spawn_box_y = n;
 
-        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH) + spawn_box_x];
+        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH_IN_BOXES) + spawn_box_x];
 
         if ((b[1]->front_object != GRID_OBJECT_NONE) || 
             (b[1]->num_things != 0))
@@ -828,8 +828,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_x + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_y + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         world_spawn_thing(THING_TYPE_BUBBLE_HORIZONTAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, THING_BUBBLE_VEL, 0, 0);
@@ -841,9 +841,9 @@ short int logic_bubble_pots_update()
                 (adjusted_timer_count % 120 == 0))
       {
         spawn_box_x = m;
-        spawn_box_y = ((n + 1) + GRID_HEIGHT) % GRID_HEIGHT;
+        spawn_box_y = ((n + 1) + GRID_HEIGHT_IN_BOXES) % GRID_HEIGHT_IN_BOXES;
 
-        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH) + spawn_box_x];
+        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH_IN_BOXES) + spawn_box_x];
 
         if ((b[1]->front_object != GRID_OBJECT_NONE) || 
             (b[1]->num_things != 0))
@@ -851,8 +851,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_x + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_y + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         world_spawn_thing(THING_TYPE_BUBBLE_VERTICAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, 0, THING_BUBBLE_VEL, 0);
@@ -863,10 +863,10 @@ short int logic_bubble_pots_update()
       else if ( (b[0]->front_object == GRID_OBJECT_BUBBLE_POT_LEFT) && 
                 (adjusted_timer_count % 120 == 0))
       {
-        spawn_box_x = ((m - 1) + GRID_WIDTH) % GRID_WIDTH;
+        spawn_box_x = ((m - 1) + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
         spawn_box_y = n;
 
-        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH) + spawn_box_x];
+        b[1] = &G_collision_grid[(spawn_box_y * GRID_WIDTH_IN_BOXES) + spawn_box_x];
 
         if ((b[1]->front_object != GRID_OBJECT_NONE) || 
             (b[1]->num_things != 0))
@@ -874,8 +874,8 @@ short int logic_bubble_pots_update()
           continue;
         }
 
-        pos_x = (GRID_BOX_SIZE * spawn_box_x + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-        pos_y = (GRID_BOX_SIZE * spawn_box_y + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+        pos_x = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_x + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+        pos_y = GRID_BOX_SIZE_IN_SUBPIXELS * spawn_box_y + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
         world_spawn_thing(THING_TYPE_BUBBLE_HORIZONTAL, COLOR_NONE, STATE_NONE, THING_ORIENT_NORMAL, 
                           pos_x, pos_y, -THING_BUBBLE_VEL, 0, 0);
@@ -902,11 +902,11 @@ short int logic_magi_blocks_update()
   unsigned int adjusted_timer_count;
 
   /* update magi blocks */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b->back_object == GRID_OBJECT_NONE)
         continue;
@@ -1027,11 +1027,11 @@ short int logic_fast_magi_blocks_update()
   unsigned int adjusted_timer_count;
 
   /* update fast magi blocks */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b->back_object == GRID_OBJECT_NONE)
         continue;
@@ -1204,10 +1204,10 @@ short int logic_collect_pickups()
           G_bunny_action = BUNNY_ACTION_JUMPING_DOUBLE;
 
         /* determine grid box that contains this pickup */
-        box_x = (t1->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_WIDTH;
-        box_y = (t1->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_HEIGHT;
+        box_x = (t1->pos_x / GRID_BOX_SIZE_IN_SUBPIXELS) % GRID_WIDTH_IN_BOXES;
+        box_y = (t1->pos_y / GRID_BOX_SIZE_IN_SUBPIXELS) % GRID_HEIGHT_IN_BOXES;
 
-        b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
+        b = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x];
 
         /* set spawner timer */
         b->back_timer_offset = 240 - G_timer_count;
@@ -1221,11 +1221,11 @@ short int logic_collect_pickups()
       else if (t1->type == THING_TYPE_MUSIC_NOTES)
       {
         /* mark all marbles of this color in the grid as matched */
-        for (n = 0; n < GRID_HEIGHT; n++)
+        for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
         {
-          for (m = 0; m < GRID_WIDTH; m++)
+          for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
           {
-            b = &G_collision_grid[(n * GRID_WIDTH) + m];
+            b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
             if (b->front_object == GRID_OBJECT_MARBLE)
             {
@@ -1270,10 +1270,10 @@ short int logic_collect_pickups()
           G_marble_gravity = MARBLE_GRAVITY_RIGHT;
 
         /* determine grid box that contains this pickup */
-        box_x = (t1->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_WIDTH;
-        box_y = (t1->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_HEIGHT;
+        box_x = (t1->pos_x / GRID_BOX_SIZE_IN_SUBPIXELS) % GRID_WIDTH_IN_BOXES;
+        box_y = (t1->pos_y / GRID_BOX_SIZE_IN_SUBPIXELS) % GRID_HEIGHT_IN_BOXES;
 
-        b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
+        b = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x];
 
         /* set spawner timer */
         b->back_timer_offset = 240 - G_timer_count;
@@ -1330,11 +1330,11 @@ short int logic_collect_pickups()
       else if (t1->type == THING_TYPE_GEM)
       {
         /* mark all marbles of this color as ready to change */
-        for (n = 0; n < GRID_HEIGHT; n++)
+        for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
         {
-          for (m = 0; m < GRID_WIDTH; m++)
+          for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
           {
-            b = &G_collision_grid[(n * GRID_WIDTH) + m];
+            b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
             if (b->front_object == GRID_OBJECT_MARBLE)
             {
@@ -1370,11 +1370,11 @@ short int logic_collect_pickups()
       else if (t1->type == THING_TYPE_KEY)
       {
         /* mark all door blocks of this color as ready to open */
-        for (n = 0; n < GRID_HEIGHT; n++)
+        for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
         {
-          for (m = 0; m < GRID_WIDTH; m++)
+          for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
           {
-            b = &G_collision_grid[(n * GRID_WIDTH) + m];
+            b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
             if (b->front_object == GRID_OBJECT_DOOR_BLOCK)
             {
@@ -1390,11 +1390,11 @@ short int logic_collect_pickups()
       else if (t1->type == THING_TYPE_MUSHROOM)
       {
         /* mark all invisible blocks of this color as ready to appear */
-        for (n = 0; n < GRID_HEIGHT; n++)
+        for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
         {
-          for (m = 0; m < GRID_WIDTH; m++)
+          for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
           {
-            b = &G_collision_grid[(n * GRID_WIDTH) + m];
+            b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
             if (b->back_object == GRID_OBJECT_INVISIBLE_BLOCK)
             {
@@ -1431,10 +1431,10 @@ short int logic_collect_pickups()
       }
 
       /* determine grid box that contains this pickup */
-      box_x = (t1->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_WIDTH;
-      box_y = (t1->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE)) % GRID_HEIGHT;
+      box_x = (t1->pos_x / GRID_BOX_SIZE_IN_SUBPIXELS) % GRID_WIDTH_IN_BOXES;
+      box_y = (t1->pos_y / GRID_BOX_SIZE_IN_SUBPIXELS) % GRID_HEIGHT_IN_BOXES;
 
-      b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
+      b = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x];
 
       /* change magnet type based on pickup spawner */
       if (b->back_object == GRID_OBJECT_MAGNET_DOWN_SPAWNER)
@@ -1657,25 +1657,25 @@ short int logic_move_critters()
           /* we get the position just beneath the critter               */
           if (t->vel_x >= 0)
           {
-            box_x[0] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
-            box_x[1] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+            box_x[0] = (t->pos_x - t->hx) / GRID_BOX_SIZE_IN_SUBPIXELS;
+            box_x[1] = (t->pos_x + t->hx - 1) / GRID_BOX_SIZE_IN_SUBPIXELS;
           }
           else
           {
-            box_x[0] = (t->pos_x + t->hx - 1) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
-            box_x[1] = (t->pos_x - t->hx) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+            box_x[0] = (t->pos_x + t->hx - 1) / GRID_BOX_SIZE_IN_SUBPIXELS;
+            box_x[1] = (t->pos_x - t->hx) / GRID_BOX_SIZE_IN_SUBPIXELS;
           }
 
-          box_y = (t->pos_y + t->hy) / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+          box_y = (t->pos_y + t->hy) / GRID_BOX_SIZE_IN_SUBPIXELS;
 
           /* wraparound box indices */
-          box_x[0] = (box_x[0] + GRID_WIDTH) % GRID_WIDTH;
-          box_x[1] = (box_x[1] + GRID_WIDTH) % GRID_WIDTH;
+          box_x[0] = (box_x[0] + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
+          box_x[1] = (box_x[1] + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
 
-          box_y = (box_y + GRID_HEIGHT) % GRID_HEIGHT;
+          box_y = (box_y + GRID_HEIGHT_IN_BOXES) % GRID_HEIGHT_IN_BOXES;
 
-          b[0] = &G_collision_grid[(box_y * GRID_WIDTH) + box_x[0]];
-          b[1] = &G_collision_grid[(box_y * GRID_WIDTH) + box_x[1]];
+          b[0] = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x[0]];
+          b[1] = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x[1]];
 
           /* check if this critter should change direction */
 
@@ -2735,14 +2735,14 @@ short int logic_platforms_etc_check_for_tracks_and_stops()
       t->state = STATE_NONE;
 
     /* determine grid box that contains this platform's center */
-    box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
-    box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+    box_x = t->pos_x / GRID_BOX_SIZE_IN_SUBPIXELS;
+    box_y = t->pos_y / GRID_BOX_SIZE_IN_SUBPIXELS;
 
     /* wraparound box indices */
-    box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
-    box_y = (box_y + GRID_HEIGHT) % GRID_HEIGHT;
+    box_x = (box_x + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
+    box_y = (box_y + GRID_HEIGHT_IN_BOXES) % GRID_HEIGHT_IN_BOXES;
 
-    b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
+    b = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x];
 
     /* make sure there is a relevant track or stop here */
     if ((t->type == THING_TYPE_BASS_KNOB) && 
@@ -2837,8 +2837,8 @@ short int logic_platforms_etc_check_for_tracks_and_stops()
       rider_indices[2] = -1;
 
     /* compute box center position (in subpixels) */
-    cx = ((box_x * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-    cy = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+    cx = GRID_BOX_SIZE_IN_SUBPIXELS * box_x + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+    cy = GRID_BOX_SIZE_IN_SUBPIXELS * box_y + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
     /* compute distance from center of grid box */
     amount_x = cx - t->pos_x;
@@ -3082,14 +3082,14 @@ short int logic_arrows_activate()
       t->state = STATE_NONE;
 
     /* determine grid box that contains this thrown thing's center */
-    box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
-    box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+    box_x = t->pos_x / GRID_BOX_SIZE_IN_SUBPIXELS;
+    box_y = t->pos_y / GRID_BOX_SIZE_IN_SUBPIXELS;
 
     /* wraparound box indices */
-    box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
-    box_y = (box_y + GRID_HEIGHT) % GRID_HEIGHT;
+    box_x = (box_x + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
+    box_y = (box_y + GRID_HEIGHT_IN_BOXES) % GRID_HEIGHT_IN_BOXES;
 
-    b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
+    b = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x];
 
     /* make sure there is an arrow here */
     if ((b->back_object != GRID_OBJECT_ARROWS_000) && 
@@ -3207,8 +3207,8 @@ short int logic_arrows_activate()
     }
 
     /* compute box center position (in subpixels) */
-    cx = ((box_x * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
-    cy = ((box_y * GRID_BOX_SIZE) + GRID_BOX_SIZE_HALF) * SUBPIXEL_MANTISSA_FULL;
+    cx = (box_x * GRID_BOX_SIZE_IN_SUBPIXELS) + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
+    cy = (box_y * GRID_BOX_SIZE_IN_SUBPIXELS) + GRID_BOX_SIZE_IN_SUBPIXELS_HALF;
 
     /* compute distance from center of grid box */
     amount_x = cx - t->pos_x;
@@ -3437,14 +3437,14 @@ short int logic_land_thrown_things()
         }
 
         /* compute grid box that contains this marble's center */
-        box_x = t->pos_x / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
-        box_y = t->pos_y / (SUBPIXEL_MANTISSA_FULL * GRID_BOX_SIZE);
+        box_x = t->pos_x / GRID_BOX_SIZE_IN_SUBPIXELS;
+        box_y = t->pos_y / GRID_BOX_SIZE_IN_SUBPIXELS;
 
         /* wraparound box indices */
-        box_x = (box_x + GRID_WIDTH) % GRID_WIDTH;
-        box_y = (box_y + GRID_HEIGHT) % GRID_HEIGHT;
+        box_x = (box_x + GRID_WIDTH_IN_BOXES) % GRID_WIDTH_IN_BOXES;
+        box_y = (box_y + GRID_HEIGHT_IN_BOXES) % GRID_HEIGHT_IN_BOXES;
 
-        b = &G_collision_grid[(box_y * GRID_WIDTH) + box_x];
+        b = &G_collision_grid[(box_y * GRID_WIDTH_IN_BOXES) + box_x];
 
         /* try to snap to the grid */
         /* note that we check for num_things being 1, because */

@@ -302,50 +302,50 @@
   /* left / right edge of screen wraparound */                                                    \
   if (pos_x - 8 < 0)                                                                              \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS), pos_y,                       \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS), pos_y,                        \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
-  else if (pos_x + 8 >= WORLD_WIDTH_IN_PIXELS)                                                    \
+  else if (pos_x + 8 >= GRID_WIDTH_IN_PIXELS)                                                     \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS), pos_y,                       \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS), pos_y,                        \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
                                                                                                   \
   /* top / bottom edge of screen wraparound */                                                    \
   if (pos_y - 8 < 0)                                                                              \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( pos_x, (pos_y + WORLD_HEIGHT_IN_PIXELS),                      \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( pos_x, (pos_y + GRID_HEIGHT_IN_PIXELS),                       \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
-  else if (pos_y + 8 >= WORLD_HEIGHT_IN_PIXELS)                                                   \
+  else if (pos_y + 8 >= GRID_HEIGHT_IN_PIXELS)                                                    \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( pos_x, (pos_y - WORLD_HEIGHT_IN_PIXELS),                      \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( pos_x, (pos_y - GRID_HEIGHT_IN_PIXELS),                       \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
                                                                                                   \
   /* corner of screen wraparound */                                                               \
   if ((pos_x - 8 < 0) && (pos_y - 8 < 0))                                                         \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS),                              \
-                                    (pos_y + WORLD_HEIGHT_IN_PIXELS),                             \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS),                               \
+                                    (pos_y + GRID_HEIGHT_IN_PIXELS),                              \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
-  else if ((pos_x + 8 >= WORLD_WIDTH_IN_PIXELS) && (pos_y - 8 < 0))                               \
+  else if ((pos_x + 8 >= GRID_WIDTH_IN_PIXELS) && (pos_y - 8 < 0))                                \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS),                              \
-                                    (pos_y + WORLD_HEIGHT_IN_PIXELS),                             \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS),                               \
+                                    (pos_y + GRID_HEIGHT_IN_PIXELS),                              \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
-  else if ((pos_x - 8 < 0) && (pos_y + 8 >= WORLD_HEIGHT_IN_PIXELS))                              \
+  else if ((pos_x - 8 < 0) && (pos_y + 8 >= GRID_HEIGHT_IN_PIXELS))                               \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS),                              \
-                                    (pos_y - WORLD_HEIGHT_IN_PIXELS),                             \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS),                               \
+                                    (pos_y - GRID_HEIGHT_IN_PIXELS),                              \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
-  else if ((pos_x + 8 >= WORLD_WIDTH_IN_PIXELS) && (pos_y + 8 >= WORLD_HEIGHT_IN_PIXELS))         \
+  else if ((pos_x + 8 >= GRID_WIDTH_IN_PIXELS) && (pos_y + 8 >= GRID_HEIGHT_IN_PIXELS))           \
   {                                                                                               \
-    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS),                              \
-                                    (pos_y - WORLD_HEIGHT_IN_PIXELS),                             \
+    VB_SPRITE_ADD_THING_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS),                               \
+                                    (pos_y - GRID_HEIGHT_IN_PIXELS),                              \
                                     z, ss_x, ss_y, lighting, palette, mode)                       \
   }                                                                                               \
                                                                                                   \
@@ -367,50 +367,50 @@
   /* left / right edge of screen wraparound */                                                            \
   if (pos_x - 8 < 0)                                                                                      \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS), pos_y,                               \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS), pos_y,                                \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if (pos_x + 8 >= WORLD_WIDTH_IN_PIXELS)                                                            \
+  else if (pos_x + 8 >= GRID_WIDTH_IN_PIXELS)                                                             \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS), pos_y,                               \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS), pos_y,                                \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
                                                                                                           \
   /* top / bottom edge of screen wraparound */                                                            \
   if (pos_y - 16 < 0)                                                                                     \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y + WORLD_HEIGHT_IN_PIXELS),                              \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y + GRID_HEIGHT_IN_PIXELS),                               \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if (pos_y + 8 >= WORLD_HEIGHT_IN_PIXELS)                                                           \
+  else if (pos_y + 8 >= GRID_HEIGHT_IN_PIXELS)                                                            \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y - WORLD_HEIGHT_IN_PIXELS),                              \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y - GRID_HEIGHT_IN_PIXELS),                               \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
                                                                                                           \
   /* corner of screen wraparound */                                                                       \
   if ((pos_x - 8 < 0) && (pos_y - 16 < 0))                                                                \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y + WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y + GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if ((pos_x + 8 >= WORLD_WIDTH_IN_PIXELS) && (pos_y - 16 < 0))                                      \
+  else if ((pos_x + 8 >= GRID_WIDTH_IN_PIXELS) && (pos_y - 16 < 0))                                       \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y + WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y + GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if ((pos_x - 8 < 0) && (pos_y + 8 >= WORLD_HEIGHT_IN_PIXELS))                                      \
+  else if ((pos_x - 8 < 0) && (pos_y + 8 >= GRID_HEIGHT_IN_PIXELS))                                       \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y - WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y - GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if ((pos_x + 8 >= WORLD_WIDTH_IN_PIXELS) && (pos_y + 8 >= WORLD_HEIGHT_IN_PIXELS))                 \
+  else if ((pos_x + 8 >= GRID_WIDTH_IN_PIXELS) && (pos_y + 8 >= GRID_HEIGHT_IN_PIXELS))                   \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y - WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y - GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
                                                                                                           \
@@ -421,50 +421,50 @@
   /* left / right edge of screen wraparound */                                                            \
   if (pos_x - 8 < 0)                                                                                      \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS), pos_y,                               \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS), pos_y,                                \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if (pos_x + 8 >= WORLD_WIDTH_IN_PIXELS)                                                            \
+  else if (pos_x + 8 >= GRID_WIDTH_IN_PIXELS)                                                             \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS), pos_y,                               \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS), pos_y,                                \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
                                                                                                           \
   /* top / bottom edge of screen wraparound */                                                            \
   if (pos_y - 8 < 0)                                                                                      \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y + WORLD_HEIGHT_IN_PIXELS),                              \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y + GRID_HEIGHT_IN_PIXELS),                               \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if (pos_y + 16 >= WORLD_HEIGHT_IN_PIXELS)                                                          \
+  else if (pos_y + 16 >= GRID_HEIGHT_IN_PIXELS)                                                           \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y - WORLD_HEIGHT_IN_PIXELS),                              \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( pos_x, (pos_y - GRID_HEIGHT_IN_PIXELS),                               \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
                                                                                                           \
   /* corner of screen wraparound */                                                                       \
   if ((pos_x - 8 < 0) && (pos_y - 8 < 0))                                                                 \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y + WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y + GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if ((pos_x + 8 >= WORLD_WIDTH_IN_PIXELS) && (pos_y - 8 < 0))                                       \
+  else if ((pos_x + 8 >= GRID_WIDTH_IN_PIXELS) && (pos_y - 8 < 0))                                        \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y + WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y + GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if ((pos_x - 8 < 0) && (pos_y + 16 >= WORLD_HEIGHT_IN_PIXELS))                                     \
+  else if ((pos_x - 8 < 0) && (pos_y + 16 >= GRID_HEIGHT_IN_PIXELS))                                      \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y - WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x + GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y - GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
-  else if ((pos_x + 8 >= WORLD_WIDTH_IN_PIXELS) && (pos_y + 16 >= WORLD_HEIGHT_IN_PIXELS))                \
+  else if ((pos_x + 8 >= GRID_WIDTH_IN_PIXELS) && (pos_y + 16 >= GRID_HEIGHT_IN_PIXELS))                  \
   {                                                                                                       \
-    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - WORLD_WIDTH_IN_PIXELS),                                      \
-                                    (pos_y - WORLD_HEIGHT_IN_PIXELS),                                     \
+    VB_SPRITE_ADD_BUNNY_TO_BUFFERS( (pos_x - GRID_WIDTH_IN_PIXELS),                                       \
+                                    (pos_y - GRID_HEIGHT_IN_PIXELS),                                      \
                                     z, ss_x, ss_y, lighting, palette, mode)                               \
   }                                                                                                       \
                                                                                                           \
@@ -531,21 +531,21 @@ short int vb_sprite_load_grid_objects_and_things()
   /* load back objects */
   sprite_index = GRAPHICS_GRID_OBJECTS_AND_THINGS_SPRITES_START_INDEX;
 
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b->back_object == GRID_OBJECT_NONE)
         continue;
 
       /* determine position */
-      pos_x = GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF;
-      pos_y = GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF;
+      pos_x = GRID_BOX_SIZE_IN_PIXELS * m + GRID_BOX_SIZE_IN_PIXELS_HALF;
+      pos_y = GRID_BOX_SIZE_IN_PIXELS * n + GRID_BOX_SIZE_IN_PIXELS_HALF;
 
       /* determine adjusted timer count */
-      adjusted_timer_count = (G_timer_count + G_collision_grid[(n * GRID_WIDTH) + m].back_timer_offset) % 240;
+      adjusted_timer_count = (G_timer_count + G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m].back_timer_offset) % 240;
 
       /* determine texture coordinates, lighting, and palette */
       if (b->back_object == GRID_OBJECT_LADDER)
@@ -686,21 +686,21 @@ short int vb_sprite_load_grid_objects_and_things()
   }
 
   /* load front objects */
-  for (n = 0; n < GRID_HEIGHT; n++)
+  for (n = 0; n < GRID_HEIGHT_IN_BOXES; n++)
   {
-    for (m = 0; m < GRID_WIDTH; m++)
+    for (m = 0; m < GRID_WIDTH_IN_BOXES; m++)
     {
-      b = &G_collision_grid[(n * GRID_WIDTH) + m];
+      b = &G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m];
 
       if (b->front_object == GRID_OBJECT_NONE)
         continue;
 
       /* determine position */
-      pos_x = GRID_BOX_SIZE * m + GRID_BOX_SIZE_HALF;
-      pos_y = GRID_BOX_SIZE * n + GRID_BOX_SIZE_HALF;
+      pos_x = GRID_BOX_SIZE_IN_PIXELS * m + GRID_BOX_SIZE_IN_PIXELS_HALF;
+      pos_y = GRID_BOX_SIZE_IN_PIXELS * n + GRID_BOX_SIZE_IN_PIXELS_HALF;
 
       /* determine adjusted timer count */
-      adjusted_timer_count = (G_timer_count + G_collision_grid[(n * GRID_WIDTH) + m].front_timer_offset) % 240;
+      adjusted_timer_count = (G_timer_count + G_collision_grid[(n * GRID_WIDTH_IN_BOXES) + m].front_timer_offset) % 240;
 
       /* determine texture coordinates, lighting, and palette */
       if (b->front_object == GRID_OBJECT_MARBLE)
