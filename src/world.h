@@ -5,7 +5,6 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "subpixel.h"
 #include "thing.h"
 
 /* things array start / end indices and counts */

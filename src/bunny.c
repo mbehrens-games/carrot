@@ -868,6 +868,8 @@ short int bunny_throw_thing(int pos_x, int pos_y, int vel_x, int vel_y)
     t2->pos_x = old_pos_x;
     t2->pos_y = old_pos_y;
 
+    doremi_play_sfx(SFX_INDEX_THROWN_THING_LANDED);
+
     return 0;
   }
   else
